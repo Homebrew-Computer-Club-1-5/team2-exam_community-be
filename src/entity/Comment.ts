@@ -1,9 +1,9 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from "typeorm"
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, BaseEntity, CreateDateColumn } from "typeorm"
 import { Post } from "./Post"
 import { User } from "./User"
 
 @Entity('comment')
-export class Comment{
+export class Comment extends BaseEntity{
     @PrimaryGeneratedColumn()
     id: number
     @ManyToOne(type=>Post,post=>post.comments,{
@@ -14,6 +14,6 @@ export class Comment{
     user_id:string
     @Column("text")
     content: string
-    @Column()
+    @CreateDateColumn()
     c_date:Date
 }

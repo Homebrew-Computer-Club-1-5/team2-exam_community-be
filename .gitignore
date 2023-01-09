@@ -6,3 +6,5 @@ tmp/
 temp/
 config/
 exam-student-community/
+src/passport.ts
+src/can_login.ts

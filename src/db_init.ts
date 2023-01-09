@@ -37,6 +37,7 @@ AppDataSource.initialize().then(async () => {
     post.m_date=new Date()
     post.num=1
     post.content="testsetsetsetsetsetsetestsetset"
+    post.click_num=0
     post.like=1
     post.comment_num=1
     post.user_key=user

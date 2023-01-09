@@ -6,14 +6,22 @@
    "scripts": {
       "test": "echo \"Error: no test specified\" && exit 1",
       "db_start": "ts-node src/db_init.ts",
-      "start":"ts-node src/index.ts",
+      "start": "ts-node src/index.ts",
       "typeorm": "typeorm-ts-node-commonjs"
    },
    "author": "",
    "license": "ISC",
    "devDependencies": {
+      "@types/cors": "^2.8.13",
       "@types/express": "^4.17.15",
       "@types/node": "^16.11.10",
+      "@types/passport": "^1.0.11",
+      "bcrypt": "^5.1.0",
+      "crypto": "^1.0.1",
+      "jsonwebtoken": "^9.0.0",
+      "lodash": "^4.17.21",
+      "passport-http-bearer": "^1.0.1",
+      "reflect-metadata": "^0.1.13",
       "ts-node": "10.7.0",
       "typescript": "4.5.2"
    },
@@ -27,7 +35,6 @@
       "nodemon": "^2.0.20",
       "passport": "^0.6.0",
       "passport-local": "^1.0.0",
-      "reflect-metadata": "^0.1.13",
       "typeorm": "0.3.11"
    }
 }

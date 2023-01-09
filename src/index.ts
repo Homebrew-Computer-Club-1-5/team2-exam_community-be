@@ -5,6 +5,8 @@ import {Post} from "./entity/Post"
 import {Comment} from "./entity/Comment"
 import { appendFile } from "fs"
 import { application } from "express"
+
+const post_list=require('../src/post_list.json')
 const admin=require('../config/admin.json')
 const express=require('express')
 const app=express();
@@ -17,6 +19,7 @@ var cors = require('cors');
 app.use(cors());
 const methodOverride=require('method-override');
 app.use(methodOverride('_method'));
+
 
 
 const path_static="exam-student-community/build"
@@ -36,59 +39,62 @@ app.get('/test1',(req,res)=>{
     res.json({name:"minseok",age:"26"});
 })
 
-// //미들웨어 요청과 응답 사이에 실행 되는 코드 app.use 로 수행 시킨다
-// const passport=require('passport');
-// const LocalStrategy=require('passport-local').Strategy;
-// const session=require('express-session');
-// app.use(session({secret: 'secret-code',resave:true,saveUninitialized:false}));
-// app.use(passport.initialize());
-// app.use(passport.session());
+//미들웨어 요청과 응답 사이에 실행 되는 코드 app.use 로 수행 시킨다
+const passport=require('passport');
+const LocalStrategy=require('passport-local').Strategy;
+const session=require('express-session');
+app.use(session({secret: 'secret-code',resave:true,saveUninitialized:false}));
+app.use(passport.initialize());
+app.use(passport.session());
 
-// passport.use(new LocalStrategy({
-//     usernameField: 'user_id',// form 의 name 값 과 같아야한다
-//     passwordField: 'user_pw',
-//     session: true,
-//     passReqToCallback: false,
-// },function(input_id,input_pw,done){ //input_id pw 는 입력한 값이다 
-//     console.log(input_id,input_pw);
-//     db.collection('login').findOne({id: input_id },function(err,result){
-//         console.log(result);
-//         if(err) return done(err) // err가 있으면 
-//         if(!result) return done(null,false,{message: '존재하지 않는 아이디요'}) //result 가 null이면 
-//         if(input_pw == result.pw){ // 찾은 정보의 비번이랑 입력 한 비번이 다르면
-//             return  done(null,result)
-//         } else{
-//             return done(null,false, {message: 'password error'})
-//         }
-//     })
-// }));
-// //로그인 검사
-// function can_login(req,res,next){
-//     if(req.user){ // 유저 정보가 없으면
-//         next() // 통과 ㄱㄱ 구문
-//     }else{ //정보가 없으면 실행
-//         res.send('로그인 필요 합니다')// 바꾸기 로그인 페이지 리다이렉션
-//     }
-// }
+passport.use(new LocalStrategy({
+    usernameField: 'user_id',// form 의 name 값 과 같아야한다
+    passwordField: 'user_pw',
+    session: true,
+    passReqToCallback: false,
+},
+    async (input_id,input_pw,done)=>{
+        const login_user=await User.findOneBy({user_id:input_id})
+        // no user
+        if(!login_user) return done(null,false)
+        //check password  사용자 지정 repository 사용 맞으면 통과
+        if(await login_user.comparePassword(input_pw)){
+            return  done(null,login_user)
+       }else{ // 틀리면 essage 반환
+            return done(null,false, {message: 'password error'})
+       }
+}))
+
+//로그인 검사
+
+export function can_login(req,res,next){
+    if(req.user){ // 유저 정보가 없으면
+        next() // 통과 ㄱㄱ 구문
+    }else{ //정보가 없으면 실행
+        res.json({message:"password error"})// 바꾸기 로그인 페이지 리다이렉션
+    }
+}
 
 //login
 app.get('/login',(req,res)=>{
     res.send('login')
     //로그인 페이지 주기
 })
-app.post('/login',(req,res)=>{ 
+app.post('/login',passport.authenticate,'local',{
+    failureRedirect: 'redirect url ' // 리다이렉트 할 url  = api호출
+},(req,res)=>{ 
     var ID= req.body.user_id
     var PW= req.body.user_pw
     console.log(ID,PW)
-
+    
     res.send('login good')
 })
 
 // user info modify
-app.get('/register',(req,res)=>{
+app.get('/register',can_login,(req,res)=>{
 
 })
-app.post('/register',(req,res)=>{
+app.post('/register',can_login,(req,res)=>{
 
 })
 // mypage
@@ -97,13 +103,7 @@ app.get('/mypage',(req,res)=>{
 })
 // app.post('/mypage',())
 
-// 게시판 생성
-app.get('/create_list',(req,res)=>{
-    //게시판 이름 
-})
-app.post('/create_list',(req,res)=>{
-    res.send('게시판 생성')
-})
+
 //게시판 보여주기
 app.get('/list',(req,res)=>{
     res.send('post ist page');
@@ -137,3 +137,25 @@ app.put('/detail/:id',(req,res)=>{
     res.send('수정 완료')
 })
 
+
+
+//세션 저장  user.id 로 세션 생성 후 저장 한다 user변수에 로그인 기능에서의 result가 들어간다
+passport.serializeUser(function(user,done){
+    done(null,user.id) // 세션 값생성후 사용자 브라우저의 쿠키에 값을 전송 한다
+});
+// 마이페이지 접속시 사용 세션 확인 구문  **user.id 가 아이디 변수에 들어간다**
+passport.deserializeUser(function(re_id,done){ //세션 정보가 있다면 해당 유저의 추가 정보를 찯아 {} 반환
+    async ()=> {
+        const login_user:User=await User.findOneBy({user_id:re_id})
+        if(!login_user){
+            console.log('login error')
+            done(null,{message:"no session"})
+        }else{
+            done(null,login_user)
+        }
+    }
+    // db.collection('login').findOne({id: re_id},function(err,result){
+    //     if(err) return console.log(err)  
+    //     done(null,result) //찾은 정보를 전달
+    // })
+});//done(server err, 성시 데사용자 데이터 반환, 메시지)
