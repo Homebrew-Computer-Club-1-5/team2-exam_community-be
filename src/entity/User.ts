@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm"
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm"
+import { Post } from "./Post"
 
 @Entity('users')
 export class User {
@@ -21,4 +22,8 @@ export class User {
     user_id:string
     @Column()
     user_pw:string
+    @OneToMany(type => Post,post=>post.user_key,{
+        cascade:true,
+    })
+    posts:Post[]
 }

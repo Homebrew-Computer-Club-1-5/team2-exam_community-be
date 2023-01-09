@@ -1,8 +1,11 @@
 import { QueryExpressionMap } from "typeorm/query-builder/QueryExpressionMap"
 import { AppDataSource } from "./data-source"
 import { User } from "./entity/User"
+import {Post} from "./entity/Post"
+import {Comment} from "./entity/Comment"
 import { appendFile } from "fs"
 import { application } from "express"
+const admin=require('../config/admin.json')
 const express=require('express')
 const app=express();
 const path=require('path');
@@ -12,23 +15,9 @@ app.use(express.static(path.join(__dirname,'../test1/build')));
 app.use(express.json());
 var cors = require('cors');
 app.use(cors());
-// AppDataSource.initialize().then(async () => {
+const methodOverride=require('method-override');
+app.use(methodOverride('_method'));
 
-//     console.log("Inserting a new user into the database...")
-//     const user = new User()
-//     user.firstName = "Timber"
-//     user.lastName = "Saw"
-//     user.age = 25
-//     await AppDataSource.manager.save(user) 
-//     console.log("Saved a new user with id: " + user.id)
-
-//     console.log("Loading users from the database...")
-//     const users = await AppDataSource.manager.find(User)
-//     console.log("Loaded users: ", users)
-
-//     console.log("Here you can setup and run express / fastify / any other framework.")
-
-// }).catch(error => console.log(error))
 
 const path_static="exam-student-community/build"
 
@@ -36,8 +25,7 @@ app.listen(8080,()=>{
     console.log('listening on 8080 port open !!!!')
 })
 app.get('/',(req,res)=>{
-    // res.send('wellcome main page ~~')
-    
+    res.sendFile(path.join(__dirname, '../'+path_static+'/index.html'));
 })
 app.get('/test',(req,res)=>{
     console.log(req.body.test)
@@ -48,13 +36,54 @@ app.get('/test1',(req,res)=>{
     res.json({name:"minseok",age:"26"});
 })
 
+// //미들웨어 요청과 응답 사이에 실행 되는 코드 app.use 로 수행 시킨다
+// const passport=require('passport');
+// const LocalStrategy=require('passport-local').Strategy;
+// const session=require('express-session');
+// app.use(session({secret: 'secret-code',resave:true,saveUninitialized:false}));
+// app.use(passport.initialize());
+// app.use(passport.session());
+
+// passport.use(new LocalStrategy({
+//     usernameField: 'user_id',// form 의 name 값 과 같아야한다
+//     passwordField: 'user_pw',
+//     session: true,
+//     passReqToCallback: false,
+// },function(input_id,input_pw,done){ //input_id pw 는 입력한 값이다 
+//     console.log(input_id,input_pw);
+//     db.collection('login').findOne({id: input_id },function(err,result){
+//         console.log(result);
+//         if(err) return done(err) // err가 있으면 
+//         if(!result) return done(null,false,{message: '존재하지 않는 아이디요'}) //result 가 null이면 
+//         if(input_pw == result.pw){ // 찾은 정보의 비번이랑 입력 한 비번이 다르면
+//             return  done(null,result)
+//         } else{
+//             return done(null,false, {message: 'password error'})
+//         }
+//     })
+// }));
+// //로그인 검사
+// function can_login(req,res,next){
+//     if(req.user){ // 유저 정보가 없으면
+//         next() // 통과 ㄱㄱ 구문
+//     }else{ //정보가 없으면 실행
+//         res.send('로그인 필요 합니다')// 바꾸기 로그인 페이지 리다이렉션
+//     }
+// }
+
 //login
 app.get('/login',(req,res)=>{
     res.send('login')
+    //로그인 페이지 주기
 })
-app.post('/login',(req,res)=>{
+app.post('/login',(req,res)=>{ 
+    var ID= req.body.user_id
+    var PW= req.body.user_pw
+    console.log(ID,PW)
+
     res.send('login good')
 })
+
 // user info modify
 app.get('/register',(req,res)=>{
 

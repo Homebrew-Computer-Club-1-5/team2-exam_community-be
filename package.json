@@ -5,7 +5,8 @@
    "main": "index.js",
    "scripts": {
       "test": "echo \"Error: no test specified\" && exit 1",
-      "start": "ts-node src/index.ts",
+      "db_start": "ts-node src/db_init.ts",
+      "start":"ts-node src/index.ts",
       "typeorm": "typeorm-ts-node-commonjs"
    },
    "author": "",
@@ -20,8 +21,12 @@
       "body-parser": "^1.20.1",
       "cors": "^2.8.5",
       "express": "^4.18.2",
+      "express-session": "^1.17.3",
+      "method-override": "^3.0.0",
       "mysql": "^2.14.1",
       "nodemon": "^2.0.20",
+      "passport": "^0.6.0",
+      "passport-local": "^1.0.0",
       "reflect-metadata": "^0.1.13",
       "typeorm": "0.3.11"
    }

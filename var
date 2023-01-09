@@ -1,0 +1,76 @@
+user_key //pk
+user_name 
+user_email
+user_phone
+user_gender  // m = 남 f = 여자
+user_c_date
+user_id
+user_pw
+user_age
+
+post_key //pk
+user_key2 // fk
+post_user_id
+post_title
+c_date
+d_date
+post_num
+post_content
+post_like
+post_comment_num
+
+comment_key
+post_key
+comment_user_key
+comment_content
+
+1. 그냥 요청
+2. 데이터 요청
+3. 요청
+
+
+> homebrew@1.0.0 db_start
+> ts-node src/db_init.ts
+
+Inserting a new user into the database...
+Saved a new user with id: 1
+Loading users from the database...
+Loaded users:  [
+  User {
+    id: 1,
+    name: 'minseok',
+    age: 25,
+    email: 'aaaaa@gmail.com',
+    phone: '01012341234',
+    gender: 'm',
+    c_date: 2023-01-09T06:27:34.000Z,
+    user_id: 'root',
+    user_pw: 'test1234'
+  }
+]
+Here you can setup and run express / fastify / any other framework.
+Saved a new post with id: 1
+Loading users from the database...
+Loaded posts:  [
+  Post {
+    id: 1,
+    user_name: 'minseok',
+    title: 'test1',
+    c_date: 2023-01-09T06:27:34.000Z,
+    m_date: 2023-01-09T06:27:34.000Z,
+    num: 1,
+    content: 'testsetsetsetsetsetsetestsetset',
+    like: 10,
+    comment_num: 1
+  }
+]
+Saved a new post with id: 1
+Loading comment from the database...
+Loaded comments :  [
+  Comment {
+    id: 1,
+    user_id: 'root',
+    content: 'test commnet',
+    c_date: 2023-01-09T06:27:34.000Z
+  }
+]
