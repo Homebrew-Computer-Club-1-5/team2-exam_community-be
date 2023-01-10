@@ -9,7 +9,6 @@ import { DataSource } from "typeorm"
 import { json } from "body-parser"
 
 const post_list=require('../src/post_list.json')
-const admin=require('../config/admin.json')
 const express=require('express')
 const app=express();
 const path=require('path');
@@ -37,15 +36,6 @@ app.listen(8080,()=>{
 app.get('/',(req,res)=>{
     res.sendFile(path.join(__dirname, '../'+path_static+'/index.html'));
 })
-app.get('/test',(req,res)=>{
-    console.log(req.body.test)
-    res.sendFile(path.join(__dirname, '../'+path_static+'/index.html'));
-})
-app.get('/test1',(req,res)=>{
-    var aaa={name:"minseok",age:"26"};
-    res.json({name:"minseok",age:"26"});
-})
-
 //미들웨어 요청과 응답 사이에 실행 되는 코드 app.use 로 수행 시킨다
 const passport=require('passport');
 const LocalStrategy=require('passport-local').Strategy;
@@ -63,13 +53,16 @@ passport.use(new LocalStrategy({
     async (input_id,input_pw,done)=>{
         const login_user=await User.findOneBy({user_id:input_id})
         // no user
-        if(!login_user) return done(null,false)
-        //check password  사용자 지정 repository 사용 맞으면 통과
-        if(await login_user.comparePassword(input_pw)){
-            return  done(null,login_user)
-       }else{ // 틀리면 essage 반환
-            return done(null,false, {message: 'password error'})
-       }
+        if(login_user){  // 뭐가 있다면
+            //check password  사용자 지정 repository 사용 맞으면 통과
+            if(await login_user.comparePassword(input_pw)){ //같으면 통과
+                return  done(null,login_user)
+            }else{ // 틀리면 message 반환
+                return done(null,false, {message: 'password error'})
+            }    
+        }else{
+            return done(null,false)
+        }
 }))
 
 //로그인 검사 미들 웨어
@@ -86,14 +79,10 @@ app.get('/login',(req,res)=>{
     res.send('login')
     //로그인 페이지 주기
 })
-app.post('/login',passport.authenticate,'local',{
-    failureRedirect: 'redirect url ' // 리다이렉트 할 url  = api호출 
-},async (req,res)=>{ 
-    var ID= req.body.user_id
-    var PW= req.body.user_pw
-    console.log(ID,PW)
-    
-    res.send('login good')
+app.post('/login',passport.authenticate('local',{
+    failureRedirect:'/fail'
+}),async (req,res)=>{ 
+    res.json({message:"login good"})
 })
 
 // user info modify
@@ -113,18 +102,18 @@ app.post('/register',async (req,res)=>{
     await user.save()
     res.json({message:"register clear"})
 })
-// mypage
+// mypage update 해야함 
 app.get('/mypage',can_login,async (req,res)=>{
 
 })
 app.post('/mypage',can_login, async (req,res)=>{
-
+    
 })
 
 
 //게시판 보여주기
 app.get('/list',(req,res)=>{
-
+    // for()
     
 
     res.send('post ist page');
@@ -140,8 +129,10 @@ app.get('/list/:id',async(req,res)=>{
 //게시물 보기 clear
 app.get('/detail/:id',can_login,async (req,res)=>{
     var post_id=parseInt(req.params.id)
-    const result=await Post.findOneBy({id:post_id})
-    res.json(result);
+    
+    const post_detail=await Post.findOneBy({id:post_id})
+    const comment_detail=await Comment.findBy({post_key:req.params.id})
+    res.json(post_detail,comment_detail); // 게시물 자료와 댓글 자료 같이 주기
 })
 //게시물 작성 페이지 요청
 app.get('/detail',can_login,async(req,res)=>{
@@ -161,8 +152,8 @@ app.post('/detail',can_login,async (req,res)=>{
     NewPost.like=parseInt(req.body.like)
     NewPost.comment_num=parseInt(req.body.comment_num)
     // 유저 정보 어떻게 함?
-    const create_user=await User.findOneBy{id:}
-    NewPost.user_key=
+    // const create_user=await User.findOneBy{id:}
+    NewPost.user_key=req.user.id // 이게 맞나?
     await NewPost.save()
     res.status(201).json({message:"post save"})
 
@@ -171,8 +162,13 @@ app.post('/detail',can_login,async (req,res)=>{
 app.delete('/detail/:id',can_login,async(req,res)=>{
     var post_id=parseInt(req.params.id)
     const result=await Post.findOneBy({id:post_id})
-    await result.remove()
-    res.json({message:"delete clear"})
+    console.log('type '+typeof(result.user_key),typeof(req.user.id))
+    if(result.user_key==req.user.id ){ // 게시물의 주인 키값과 유저 키 값이 같으면 삭제
+        await result.remove()
+        res.json({message:"delete clear"})
+    }else{
+        res.json({message:"delete fail no "})
+    }
 })
 //게시물 수정
 app.put('/detail/:id',can_login,async(req,res)=>{
@@ -181,6 +177,26 @@ app.put('/detail/:id',can_login,async(req,res)=>{
 })
 app.get('/comment',can_login,async(req,res)=>{
 
+})
+//답글 작성
+app.post('/comment',can_login,async(req,res)=>{
+    const NewComment=new Comment()
+    //반드시 답글 달때는 게시물 유일키도 같이 보내야함
+    console.log(typeof("post_key type"+req.body.post_key))
+    NewComment.post_key=req.body.post_key
+    NewComment.user_id=req.body.user_id
+    NewComment.content=req.body.comment
+    NewComment.c_date=new Date()
+})
+app.delete('/comment',async(req,res)=>{
+    var comment=parseInt(req.body.id)
+    const comment_d=await Comment.findOneBy({id:comment})
+    if(comment_d==req.user.user_id){
+        await comment_d.remove()
+        res.json({message: " delete comment"})
+    }else{
+        res.json({message: "don`t delete"})
+    }
 })
 
 
