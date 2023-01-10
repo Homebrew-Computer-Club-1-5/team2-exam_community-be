@@ -5,6 +5,8 @@ import {Post} from "./entity/Post"
 import {Comment} from "./entity/Comment"
 import { appendFile } from "fs"
 import { application } from "express"
+import { DataSource } from "typeorm"
+import { json } from "body-parser"
 
 const post_list=require('../src/post_list.json')
 const admin=require('../config/admin.json')
@@ -20,6 +22,11 @@ app.use(cors());
 const methodOverride=require('method-override');
 app.use(methodOverride('_method'));
 
+
+AppDataSource.initialize().then(async () => {
+
+
+}).catch(error => console.log(error))
 
 
 const path_static="exam-student-community/build"
@@ -65,8 +72,7 @@ passport.use(new LocalStrategy({
        }
 }))
 
-//로그인 검사
-
+//로그인 검사 미들 웨어
 export function can_login(req,res,next){
     if(req.user){ // 유저 정보가 없으면
         next() // 통과 ㄱㄱ 구문
@@ -81,8 +87,8 @@ app.get('/login',(req,res)=>{
     //로그인 페이지 주기
 })
 app.post('/login',passport.authenticate,'local',{
-    failureRedirect: 'redirect url ' // 리다이렉트 할 url  = api호출
-},(req,res)=>{ 
+    failureRedirect: 'redirect url ' // 리다이렉트 할 url  = api호출 
+},async (req,res)=>{ 
     var ID= req.body.user_id
     var PW= req.body.user_pw
     console.log(ID,PW)
@@ -91,52 +97,91 @@ app.post('/login',passport.authenticate,'local',{
 })
 
 // user info modify
-app.get('/register',can_login,(req,res)=>{
+app.get('/register',(req,res)=>{
 
 })
-app.post('/register',can_login,(req,res)=>{
-
+app.post('/register',async (req,res)=>{
+    const user = new User()
+    user.name=req.body.name
+    user.age=parseInt(req.body.age) 
+    user.email=req.body.email
+    user.phone=req.body.phone
+    user.gender=req.body.gender
+    user.c_date=new Date()
+    user.user_id=req.body.user_id
+    user.user_pw=req.body.user_pw
+    await user.save()
+    res.json({message:"register clear"})
 })
 // mypage
-app.get('/mypage',(req,res)=>{
+app.get('/mypage',can_login,async (req,res)=>{
 
 })
-// app.post('/mypage',())
+app.post('/mypage',can_login, async (req,res)=>{
+
+})
 
 
 //게시판 보여주기
 app.get('/list',(req,res)=>{
+
+    
+
     res.send('post ist page');
     //게시판 종류 페이지 게시판 목록 db 
 })
-//게시물 보여주기
-app.get('/list/:id',(req,res)=>{
-    var id=req.params.id;
+//게시물 보여주기 clear
+app.get('/list/:id',async(req,res)=>{
+    var post_num=parseInt(req.params.id)
+    const all_list=await Post.findBy({num:post_num})
     // 각 게시판의 게시물 db 
-    res.send('** 게시판')
+    res.status(201).json(all_list)
 })
-//게시물 보기
-app.get('/detail/:id',(req,res)=>{
-    // id 게시물 id
-    res.send('detail');
+//게시물 보기 clear
+app.get('/detail/:id',can_login,async (req,res)=>{
+    var post_id=parseInt(req.params.id)
+    const result=await Post.findOneBy({id:post_id})
+    res.json(result);
 })
-//게시물 작성
-app.get('/detail',(req,res)=>{
-    res.send('write')
-})
-app.post('/detail',(req,res)=>{
+//게시물 작성 페이지 요청
+app.get('/detail',can_login,async(req,res)=>{
+    
     // 선택 창 에서 선택한 게시판에  넣기 
     // 1, 게시판 종류 2, 제목 작성자 날짜 ...
 })
-//게시물 삭제
-app.delete('/detail/:id',(req,res)=>{
-    res.send('삭제완료')
+app.post('/detail',can_login,async (req,res)=>{
+    
+    const NewPost = new Post()
+    NewPost.user_name=req.body.user_name
+    NewPost.title=req.body.title
+    NewPost.c_date=new Date()
+    NewPost.num=parseInt(req.body.num)
+    NewPost.content=req.body.comment
+    NewPost.click_num=parseInt(req.body.click_num)
+    NewPost.like=parseInt(req.body.like)
+    NewPost.comment_num=parseInt(req.body.comment_num)
+    // 유저 정보 어떻게 함?
+    const create_user=await User.findOneBy{id:}
+    NewPost.user_key=
+    await NewPost.save()
+    res.status(201).json({message:"post save"})
+
+})
+//게시물 삭제 clear
+app.delete('/detail/:id',can_login,async(req,res)=>{
+    var post_id=parseInt(req.params.id)
+    const result=await Post.findOneBy({id:post_id})
+    await result.remove()
+    res.json({message:"delete clear"})
 })
 //게시물 수정
-app.put('/detail/:id',(req,res)=>{
+app.put('/detail/:id',can_login,async(req,res)=>{
+    
     res.send('수정 완료')
 })
+app.get('/comment',can_login,async(req,res)=>{
 
+})
 
 
 //세션 저장  user.id 로 세션 생성 후 저장 한다 user변수에 로그인 기능에서의 result가 들어간다
