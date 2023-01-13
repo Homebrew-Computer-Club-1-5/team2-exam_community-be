@@ -108,7 +108,9 @@ app.post('/login',passport.authenticate('local',{
     failureRedirect:'/fail'
 }),async (req,res)=>{ 
     console.log(req.user)
-    res.json(req.user)
+    var res_user=req.user
+    res_user.user_pw=""; // 중요한 pw값은 넘기지 않겠다는 마음으로
+    res.json(res_user)
 })
 app.get('/user',can_login,(req,res)=>{
     console.log(req.user)
@@ -140,7 +142,7 @@ app.get('/logout',can_login,async(req,res)=>{
 })
 //중복 아이디 입니다
 app.get('/id_compare',async(req,res)=>{
-    const sm=await User.findbyid(req.body.user_id)
+    const sm=await User.findbyid(req.body.user_id)//찾아지면 중복이라능
     if(sm){
         res.json({message:"중복입니다"})
     }else{
@@ -159,7 +161,7 @@ app.post('/find_id',async (req,res)=>{
 //1 암호화 해댜한다 2 암호화가 자동으로 가능 하다 insertAfter 때문에
 app.post('/new_creat_pw',async(req,res)=>{
     //유저정보
-    
+
 })
 
 
@@ -276,18 +278,17 @@ app.get('/detail/:id',async(req,res)=>{
 
 app.post('/detail',can_login,async (req,res)=>{
     const NewPost = new Post()
-    NewPost.user_name=req.user.user_name
+    NewPost.user_name=req.user.name
     NewPost.title=req.body.title
     NewPost.c_date=new Date()
     NewPost.num=parseInt(req.body.num)
-    NewPost.content=req.body.comment
+    NewPost.content=req.body.content
     NewPost.click_num=0
     NewPost.like=0
     NewPost.comment_num=0
-    // 유저 정보 어떻게 함?
-    // const create_user=await User.findOneBy{id:}
-    NewPost.user_key=req.user.id // 이게 맞나?
+    NewPost.user_key=req.user.id // 이게 맞나? => 맞다 ^^^^^^^^^
     await NewPost.save()
+    console.log(NewPost)
     res.status(201).json({message:"post save"})
 
 })
@@ -331,8 +332,8 @@ app.post('/comment',can_login,async(req,res)=>{
     //반드시 답글 달때는 게시물 유일키도 같이 보내야함
     console.log(typeof("post_key type"+req.body.post_key))
     NewComment.post_key=req.body.post_key
-    NewComment.user_id=req.body.user_id
-    NewComment.content=req.body.comment
+    NewComment.user_id=req.user.user_id
+    NewComment.content=req.body.content
     NewComment.c_date=new Date()
     await NewComment.save()
     res.json({message:"comment save"})
@@ -347,8 +348,6 @@ app.delete('/comment/:id',can_login,async(req,res)=>{
         res.json({message: "don`t delete"})
     }
 })
-
-
 
 passport.serializeUser((user,done)=>{
     done(null,user.id) 
