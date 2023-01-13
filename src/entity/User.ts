@@ -31,6 +31,12 @@ export class User extends BaseEntity{
     })
     posts:Post[]
     
+    static findbyid(user_id: string) {
+        return this.createQueryBuilder("user")
+            .where("user.user_id = :user_id", { user_id })
+            .getOne();
+    }
+
     //insert 이후 hash 암호화
     @BeforeInsert()
     async saveEncryptedPassword(){
@@ -38,6 +44,6 @@ export class User extends BaseEntity{
     }
     // input user_pw 와 this.user_pw 의 hash 값 비교
     comparePassword(user_pw:string):boolean{
-        return bcrypt.compare(user_pw,this.user_pw,5)
+        return bcrypt.compare(user_pw,this.user_pw)
     }
 }

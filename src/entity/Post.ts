@@ -34,4 +34,16 @@ export class Post extends BaseEntity{
         cascade:true,
     })
     comments:Comment[]
+
+    static find_num(num:number) {
+        return this.createQueryBuilder("post")
+        .select()
+        .where("post.num = ", {num})
+        .getOne();
+    }
+    user_compare(input:Post){
+        if(input.user_key==this.user_key){
+            
+        }
+    }
 }

@@ -16,4 +16,10 @@ export class Comment extends BaseEntity{
     content: string
     @CreateDateColumn()
     c_date:Date
+
+	static find_post_key(post_key:number) {
+        return this.createQueryBuilder("comment")
+        .where("comment.post_key = :post_key", {post_key})
+        .getMany();
+    }
 }
