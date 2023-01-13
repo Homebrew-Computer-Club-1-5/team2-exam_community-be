@@ -38,9 +38,10 @@ const path_static="exam-student-community/build"
 app.listen(8080,()=>{
     console.log('listening on 8080 port open !!!!')
 })
-// app.get('/',(req,res)=>{
-//     res.sendFile(path.join(__dirname, '../'+path_static+'/index.html'));
-// })
+app.get('/',(req,res)=>{
+    res.json({message:"main page / !!"})
+    // res.sendFile(path.join(__dirname, '../'+path_static+'/index.html'));
+})
 
 
 app.get('/test',(req,res)=>{
@@ -133,13 +134,15 @@ app.get('/login',can_login,async(req,res)=>{
     }
 })
 
-app.get('/logout',can_login,async(req,res)=>{
-    console.log('logout')
-    req.logout();
-    req.session.save(()=>{
-        res.redirect('/');
-    })
-})
+
+app.post('/logout', function(req, res, next){
+    req.logout(function(err) {
+      if (err) { return next(err); }
+      res.redirect('/');
+    });
+});
+
+
 //중복 아이디 입니다
 app.get('/id_compare',async(req,res)=>{
     const sm=await User.findbyid(req.body.user_id)//찾아지면 중복이라능
@@ -308,6 +311,7 @@ app.delete('/detail/:id',can_login,async(req,res)=>{
 app.put('/detail/:id',can_login,async(req,res)=>{
     const up_post=AppDataSource.getRepository(Post)
     const post=await Post.findOneBy({id:parseInt(req.params.id)})
+    console.log("before post"+post)
     if(req.user.id==post.user_key){
         await up_post
         .createQueryBuilder()
@@ -317,7 +321,7 @@ app.put('/detail/:id',can_login,async(req,res)=>{
         .execute()
         .then((data)=>{
             res.json(data)
-            console.log("update post"+data)
+            console.log("update post"+ data)
         })
         .catch((err)=>{
             console.log("update error "+ err)
