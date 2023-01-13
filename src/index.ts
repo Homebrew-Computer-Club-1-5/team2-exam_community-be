@@ -240,14 +240,25 @@ app.post('/mypage',can_login, async (req,res)=>{
 
 //게시판 보여주기
 app.get('/blogs',async(req,res)=>{
+    const postsql=AppDataSource.getRepository(Post)
     var arr=[]
     //1 자유게시판
-    var post_number=[1,2,3,4,5]
-    for(var i;i<post_number.length;i++){
-        arr[i]=await Post.find_num(i)  // 5개씩 찾아서 주기
+    var post_num=[1,2] // post_num[0]은 1부터 시작 한다   
+    for(var i;i<post_num.length;i++){
+        arr[i]=await postsql.find({
+            where:{
+                num:post_num[i]
+            },
+            order:{
+                c_date:"DESC" // 내림차순으로 나중에 만든거 부터
+            },
+            skip:0,
+            take:4,
+            // cache:true, // 캐시 할건지
+        })
     }
-    res.send('post ist page');
-    // res.json(arr)
+    console.log(arr)
+    res.json(arr)
     //게시판 종류 페이지 게시판 목록 db 
 })
 //게시물 보여주기 clear
