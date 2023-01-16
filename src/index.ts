@@ -15,13 +15,17 @@ import { userInfo } from "os"
 var typeorm =require("typeorm")
 var EntitySchema=typeorm.EntitySchema;
 const express=require('express')
+var cors = require('cors');
 const app=express();
+app.use(cors({
+    orgin:'*',
+    credential:true
+}));
+app.set("trust proxy",1)
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 const path=require('path');
 app.use(express.static(path.join(__dirname,'../test1/build')));
-var cors = require('cors');
-app.use(cors());
 const methodOverride=require('method-override');
 app.use(methodOverride('_method'));
 const dotenv=require('dotenv')
@@ -43,6 +47,11 @@ app.get('/',(req,res)=>{
     // res.sendFile(path.join(__dirname, '../'+path_static+'/index.html'));
 })
 
+app.get('/req',(req,res)=>{
+    console.log("여기",req.headers)
+    // console.log(res.headers)
+    res.send("yes")
+})
 
 app.get('/test',(req,res)=>{
     // name=test value="dfsdfdsfdsfaffdf"
@@ -66,7 +75,7 @@ app.post('/test',(req,res)=>{
 const passport=require('passport');
 const LocalStrategy=require('passport-local').Strategy;
 const session=require('express-session');
-app.use(session({secret: 'secret-code',resave:true,saveUninitialized:false}));
+app.use(session({secret: 'secret',resave:false,saveUninitialized:false}));
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -125,9 +134,9 @@ app.get('/login',can_login,async(req,res)=>{
         const find_user=await User.findOne({where:{id:user}})
         console.log("find_user "+find_user)
         if(req.user.id==find_user.id){
-            res.json({message: true})
+            res.json({isAuthenticated: true,username: req.user.name})
         }else{
-            res.json({message: false})
+            res.json({isAuthenticated: false})
         }
     } catch (err) {
         console.log('로그인 정보 없음')
@@ -243,9 +252,11 @@ app.get('/blogs',async(req,res)=>{
     const postsql=AppDataSource.getRepository(Post)
     var arr=[]
     //1 자유게시판
-    var post_num=[1,2] // post_num[0]은 1부터 시작 한다   
-    for(var i;i<post_num.length;i++){
-        arr[i]=await postsql.find({
+    var post_num=[1,2,3,4] // post_num[0]은 1부터 시작 한다   
+    for(let i=0;i<post_num.length;i++){
+        console.log(post_num)
+        console.log("11111111")
+        arr[i]=await postsql.findAndCount({
             where:{
                 num:post_num[i]
             },
@@ -288,7 +299,6 @@ app.get('/detail/:id',async(req,res)=>{
     console.log(post_comments)    
     res.json({post_detail,post_comments})
 })
-
 
 app.post('/detail',can_login,async (req,res)=>{
     const NewPost = new Post()
