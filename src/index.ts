@@ -337,6 +337,31 @@ app.get('/detail/:id',async(req,res)=>{
     console.log(post_comments)    
     res.json({post_detail,post_comments})
 })
+//find post 1 제목 2 작성자 3 
+app.get('/findpost/:id',async(req,res)=>{
+    const findPost=AppDataSource.getMongoRepository(Post)
+    const find_id=parseInt(req.params.id)
+    const arr=['no','제목','작성자']
+    if(arr[find_id]=='제목'){
+        var post=await findPost.find({
+            where:{
+                title:req.body.title
+            },
+            order:{
+                c_date:"DESC"
+            }
+        })// 제목
+        res.json(post)
+    }
+    if(arr[find_id]=='작성자'){
+        var post=await findPost.find({
+            where:{
+                user_id:req.body.user_id
+            }
+        })//작성자
+        res.json(post)
+    }
+})
 
 app.post('/detail',can_login,async (req,res)=>{
     const NewPost = new Post()
