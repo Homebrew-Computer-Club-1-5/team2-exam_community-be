@@ -5,9 +5,6 @@ import {Post} from "./entity/Post"
 import {Comment} from "./entity/Comment"
 const admin = require('../config/admin.json')
 
-var userid;
-var postid;
-
 AppDataSource.initialize().then(async () => {
 
     console.log("Inserting a new user into the database...")
@@ -31,7 +28,7 @@ AppDataSource.initialize().then(async () => {
 
     //post 
     const post=new Post()
-    post.user_name="minseok"
+    post.user_id=admin.ID
     post.title="test1"
     post.c_date=new Date()
     post.m_date=new Date()

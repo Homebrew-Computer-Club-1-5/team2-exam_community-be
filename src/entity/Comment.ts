@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, BaseEntity, CreateDateColumn } from "typeorm"
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, BaseEntity, CreateDateColumn, JoinTable } from "typeorm"
 import { Post } from "./Post"
 import { User } from "./User"
 
@@ -9,6 +9,7 @@ export class Comment extends BaseEntity{
     @ManyToOne(type=>Post,post=>post.comments,{
         onDelete:"CASCADE",
     })
+    @JoinTable()
     post_key:Post
     @Column()
     user_id:string

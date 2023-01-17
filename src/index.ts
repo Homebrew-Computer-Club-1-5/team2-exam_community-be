@@ -10,6 +10,7 @@ import {  DataSource, EntityManager, UpdateQueryBuilder  } from "typeorm"
 import { isArrayBuffer } from "util/types"
 import { disconnect, resourceUsage } from "process"
 import { userInfo } from "os"
+import { resourceLimits } from "worker_threads"
 
 
 var typeorm =require("typeorm")
@@ -39,8 +40,8 @@ AppDataSource.initialize().then(async () => {
 
 const path_static="exam-student-community/build"
 
-app.listen(8080,()=>{
-    console.log('listening on 8080 port open !!!!')
+app.listen(8888,()=>{
+    console.log('listening on 8888 port open !!!!')
 })
 app.get('/',(req,res)=>{
     res.json({message:"main page / !!"})
@@ -246,6 +247,40 @@ app.post('/mypage',can_login, async (req,res)=>{
         res.json(err)
     })
 })
+app.get('/mypost',can_login,async(req,res)=>{
+    const mypost=AppDataSource.getMongoRepository(Post)
+    const post=await mypost.find({
+        where:{
+            user_id:req.user.user_id
+        },
+        order:{
+            c_date:"DESC"
+        },
+    })
+    if(post){
+        console.log('my post 성공 ')
+        res.json(post)
+    }else{
+        res.json({message:"mypost fail"})
+    }
+})
+app.get('/mycomment',can_login,async(req,res)=>{
+    const mycomment=AppDataSource.getMongoRepository(Comment)
+    const comment=await mycomment.find({
+        where:{
+            user_id:req.user.user_id
+        },
+        order:{
+            c_date:"DESC"
+        },
+    })
+    if(comment){
+        console.log('my post 성공 ')
+        res.json(comment)
+    }else{
+        res.json({message:"mypost fail"})
+    }
+})
 
 //게시판 보여주기
 app.get('/blogs',async(req,res)=>{
@@ -255,7 +290,6 @@ app.get('/blogs',async(req,res)=>{
     var post_num=[1,2,3,4] // post_num[0]은 1부터 시작 한다   
     for(let i=0;i<post_num.length;i++){
         console.log(post_num)
-        console.log("11111111")
         arr[i]=await postsql.findAndCount({
             where:{
                 num:post_num[i]
@@ -278,7 +312,11 @@ app.get('/blogs/:id',async(req,res)=>{
     var num_id:number=parseInt(req.params.id);
     console.log(num_id);
     const post_list=AppDataSource.getRepository(Post);
-    await post_list.findAndCount({where:{num:num_id}})
+    await post_list.findAndCount({
+        where:{num:num_id},
+        order:{c_date:"DESC"}
+    
+    })
     .then((result)=>{
         console.log(result);
         res.json(result);
@@ -302,7 +340,7 @@ app.get('/detail/:id',async(req,res)=>{
 
 app.post('/detail',can_login,async (req,res)=>{
     const NewPost = new Post()
-    NewPost.user_name=req.user.name
+    NewPost.user_id=req.user.user_id
     NewPost.title=req.body.title
     NewPost.c_date=new Date()
     NewPost.num=parseInt(req.body.num)
@@ -319,21 +357,33 @@ app.post('/detail',can_login,async (req,res)=>{
 //게시물 삭제 clear
 app.delete('/detail/:id',can_login,async(req,res)=>{
     var post_id=parseInt(req.params.id)
-    const result=await Post.findOneBy({id:post_id})
-    // console.log('type '+typeof(result.user_key),typeof(req.user.id))
-    if(result.user_key==req.user.id ){ // 게시물의 주인 키값과 유저 키 값이 같으면 삭제
+    var result=new Post()
+    result=await Post.findOneBy({id:post_id})
+    if(result.user_id==req.user.user_id ){ // 게시물의 주인 아이디 값과 유저 아이디 값이 같으면 삭제
+        var com=await Comment.find({where:{user_id:result.user_id}}) //댓글 삭제
+        if(com){// 나중에 조건을 안에 comment_num 을 넣어서 댓글 확인하고 조회하면 더좋은 성늘 을 가질것
+            Comment.remove(com) //  댓글 있으면 삭제
+        }
         await result.remove()
         res.json({message:"delete clear"})
     }else{
         res.json({message:"delete fail no "})
     }
 })
+app.get('/finduser',async(req,res)=>{
+    const user=await User.findOne({where:{id:1}})
+    const post=await Post.findAndCount({where:{id:1}})
+    console.log(user,post)
+    
+    res.json({message:"end"})
+})
+
 //게시물 수정
 app.put('/detail/:id',can_login,async(req,res)=>{
     const up_post=AppDataSource.getRepository(Post)
     const post=await Post.findOneBy({id:parseInt(req.params.id)})
     console.log("before post"+post)
-    if(req.user.id==post.user_key){
+    if(req.user.user_id==post.user_id){
         await up_post
         .createQueryBuilder()
         .update(Post)
@@ -352,20 +402,23 @@ app.put('/detail/:id',can_login,async(req,res)=>{
 })
 
 //답글 작성
+//보내줘 post_key , content
 app.post('/comment',can_login,async(req,res)=>{
     const NewComment=new Comment()
     //반드시 답글 달때는 게시물 유일키도 같이 보내야함
     console.log(typeof("post_key type"+req.body.post_key))
-    NewComment.post_key=req.body.post_key
-    NewComment.user_id=req.user.user_id
+    NewComment.post_key=req.body.post_key 
+    NewComment.user_id=req.user.user_id 
     NewComment.content=req.body.content
     NewComment.c_date=new Date()
     await NewComment.save()
     res.json({message:"comment save"})
 })
+//보내줘 coment id 값 
 app.delete('/comment/:id',can_login,async(req,res)=>{
     var comment=parseInt(req.params.id)
-    const comment_d=await Comment.findOneBy({id:comment})
+    var comment_d=new Comment()
+    comment_d=await Comment.findOneBy({id:comment})
     if(comment_d.user_id==req.user.user_id){
         await comment_d.remove()
         res.json({message: " delete comment"})

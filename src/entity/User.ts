@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, BeforeInsert } from "typeorm"
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, BeforeInsert, JoinColumn } from "typeorm"
 import { Post } from "./Post"
 import * as bcrypt from 'bcrypt'; // 암호화 관련
 @Entity('users')

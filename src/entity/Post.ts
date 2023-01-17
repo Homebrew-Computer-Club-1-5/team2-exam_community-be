@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, ManyToOne, OneToMany, BaseEntity, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from "typeorm"
+import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, ManyToOne, OneToMany, BaseEntity, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, JoinColumn, JoinTable } from "typeorm"
 import { User } from "./User"
 import { Comment } from "./Comment"
 
@@ -7,7 +7,7 @@ export class Post extends BaseEntity{
     @PrimaryGeneratedColumn()
     id: number
     @Column()
-    user_name:string
+    user_id:string
     @Column()
     title:string
     @CreateDateColumn()
@@ -29,7 +29,8 @@ export class Post extends BaseEntity{
     @ManyToOne(type=>User,user=>user.posts,{
         onDelete:'CASCADE',
     })
-    user_key:User
+    @JoinTable()
+    user_key:User;
     @OneToMany(type=>Comment,comment=>comment.post_key,{
         cascade:true,
     })
