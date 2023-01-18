@@ -40,8 +40,8 @@ AppDataSource.initialize().then(async () => {
 
 const path_static="exam-student-community/build"
 
-app.listen(8888,()=>{
-    console.log('listening on 8888 port open !!!!')
+app.listen(8080,()=>{
+    console.log('listening on 8080 port open !!!!')
 })
 app.get('/',(req,res)=>{
     res.json({message:"main page / !!"})
@@ -127,7 +127,6 @@ app.get('/user',can_login,(req,res)=>{
     console.log(req.user)
     console.log(req.user.id)
     res.json(req.user.id)
-
 })
 app.get('/login',can_login,async(req,res)=>{
     const user=req.user.id
@@ -154,13 +153,17 @@ app.post('/logout', function(req, res, next){
 
 
 //중복 아이디 입니다
-app.get('/id_compare',async(req,res)=>{
-    const sm=await User.findbyid(req.body.user_id)//찾아지면 중복이라능
-    if(sm){
-        res.json({message:"중복입니다"})
+app.post('/id_compare',async(req,res)=>{
+    const user_input =req.body.user_id
+    console.log(user_input)
+    const compare_user=AppDataSource.getRepository(User)
+    const us=await compare_user.findOne({where:{user_id:user_input}})
+    if(us){
+        res.json({boo:false})
     }else{
-        res.json({message:"가능한 아이디 입니다"})
+        res.json({boo:true})
     }
+    
 })
 //id find
 app.post('/find_id',async (req,res)=>{
@@ -248,7 +251,7 @@ app.post('/mypage',can_login, async (req,res)=>{
     })
 })
 app.get('/mypost',can_login,async(req,res)=>{
-    const mypost=AppDataSource.getMongoRepository(Post)
+    const mypost=AppDataSource.getRepository(Post)
     const post=await mypost.find({
         where:{
             user_id:req.user.user_id
@@ -265,7 +268,7 @@ app.get('/mypost',can_login,async(req,res)=>{
     }
 })
 app.get('/mycomment',can_login,async(req,res)=>{
-    const mycomment=AppDataSource.getMongoRepository(Comment)
+    const mycomment=AppDataSource.getRepository(Comment)
     const comment=await mycomment.find({
         where:{
             user_id:req.user.user_id
@@ -329,6 +332,10 @@ app.get('/blogs/:id',async(req,res)=>{
 //게시물 보기 clear
 app.get('/detail/:id',async(req,res)=>{
     var post_id=parseInt(req.params.id)
+    
+    // if(req.user){
+    //     const us=await User.find({id:req.b})
+    // }
     console.log(req.params.id)
     console.log(typeof(req.params.id))
     const post_detail=await Post.findOneBy({id:post_id})
@@ -337,13 +344,15 @@ app.get('/detail/:id',async(req,res)=>{
     console.log(post_comments)    
     res.json({post_detail,post_comments})
 })
+
+
 //find post 1 제목 2 작성자 3 
-app.get('/findpost/:id',async(req,res)=>{
-    const findPost=AppDataSource.getMongoRepository(Post)
+app.post('/findpost/:id',async(req,res)=>{
+    const findPost=AppDataSource.getRepository(Post)
     const find_id=parseInt(req.params.id)
     const arr=['no','제목','작성자']
     if(arr[find_id]=='제목'){
-        var post=await findPost.find({
+        const post=await findPost.find({
             where:{
                 title:req.body.title
             },
@@ -351,6 +360,7 @@ app.get('/findpost/:id',async(req,res)=>{
                 c_date:"DESC"
             }
         })// 제목
+        console.log(post)
         res.json(post)
     }
     if(arr[find_id]=='작성자'){
@@ -361,6 +371,7 @@ app.get('/findpost/:id',async(req,res)=>{
         })//작성자
         res.json(post)
     }
+    
 })
 
 app.post('/detail',can_login,async (req,res)=>{
@@ -374,6 +385,7 @@ app.post('/detail',can_login,async (req,res)=>{
     NewPost.like=0
     NewPost.comment_num=0
     NewPost.user_key=req.user.id // 이게 맞나? => 맞다 ^^^^^^^^^
+    NewPost.hide_user=req.body.hide_user
     await NewPost.save()
     console.log(NewPost)
     res.status(201).json({message:"post save"})
@@ -403,6 +415,17 @@ app.get('/finduser',async(req,res)=>{
     res.json({message:"end"})
 })
 
+app.get('/modify/:id',can_login,async(req,res)=>{
+    const up_post=AppDataSource.getRepository(Post)
+    const post=await up_post.find({
+        where:{id:parseInt(req.params.id)}
+    })
+    if(post){
+        res.json(post)
+    }else{
+        res.json({massage:"fail post"})
+    }
+})
 //게시물 수정
 app.put('/detail/:id',can_login,async(req,res)=>{
     const up_post=AppDataSource.getRepository(Post)

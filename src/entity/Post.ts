@@ -26,6 +26,8 @@ export class Post extends BaseEntity{
     like:number
     @Column()
     comment_num:number
+    @Column()
+    hide_user:boolean
     @ManyToOne(type=>User,user=>user.posts,{
         onDelete:'CASCADE',
     })
