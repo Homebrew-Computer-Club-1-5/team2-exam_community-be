@@ -364,7 +364,9 @@ app.post('/findpost/:id',async(req,res)=>{
         res.json(post)
     }
     if(arr[find_id]=='작성자'){
-        var post=await findPost.find({
+        console.log(find_id)
+        console.log(req.body.user_id)
+        const post=await findPost.find({
             where:{
                 user_id:req.body.user_id
             }
