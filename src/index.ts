@@ -91,15 +91,15 @@ function can_login(req,res,next){
 
 //login
 app.post('/login',passport.authenticate('local',{
-
+    failureRedirect: '/fail_login'
 }),async (req,res)=>{ 
-    // if(fail==0){
-    //     res.status(500).json({message:"fail"});
-    // }
     console.log(req.user)
     var res_user=req.user
     res_user.user_pw=""; // 중요한 pw값은 넘기지 않겠다는 마음으로
     res.json(res_user)
+})
+app.get('/fail_login',(req,res)=>{
+    res.status(500).json({message:"login fail "})
 })
 
 app.get('/user',can_login,(req,res)=>{
