@@ -48,30 +48,6 @@ app.get('/',(req,res)=>{
     // res.sendFile(path.join(__dirname, '../'+path_static+'/index.html'));
 })
 
-app.get('/req',(req,res)=>{
-    console.log("여기",req.headers)
-    // console.log(res.headers)
-    res.send("yes")
-})
-
-app.get('/test',(req,res)=>{
-    // name=test value="dfsdfdsfdsfaffdf"
-    console.log('aaaaaaaa')
-    console.log(req.body.test)
-    res.json({message:"test good"})
-})
-
-app.post('/test',(req,res)=>{
-    // name=test value="dfsdfdsfdsfaffdf"
-    console.log('aaaaaaaa')
-    console.log(req.body.test)
-    console.log(req.body.data)
-    console.log(req.body)
-    console.log(typeof(req.body.test))
-    console.log(typeof(req.body.data))
-    var arrr=[{name:"aaaa"},{name:"bbbb"},{name:"cccc"},{name:"dddd"},{name:"ffff"}]
-    res.json(arrr)
-})
 //미들웨어 요청과 응답 사이에 실행 되는 코드 app.use 로 수행 시킨다
 const passport=require('passport');
 const LocalStrategy=require('passport-local').Strategy;
@@ -114,19 +90,22 @@ function can_login(req,res,next){
 }
 
 //login
-
 app.post('/login',passport.authenticate('local',{
-    failureRedirect:'/fail'
+
 }),async (req,res)=>{ 
+    // if(fail==0){
+    //     res.status(500).json({message:"fail"});
+    // }
     console.log(req.user)
     var res_user=req.user
     res_user.user_pw=""; // 중요한 pw값은 넘기지 않겠다는 마음으로
     res.json(res_user)
 })
+
 app.get('/user',can_login,(req,res)=>{
-    console.log(req.user)
-    console.log(req.user.id)
-    res.json(req.user.id)
+    console.log(req.user);
+    console.log(req.user.id);
+    res.json(req.user.id);
 })
 app.get('/login',can_login,async(req,res)=>{
     const user=req.user.id
@@ -201,29 +180,6 @@ app.post('/register',async(req,res)=>{
     await user.save()
     res.json( {message:"register clear"} )
 })
-//test register1
-app.post('/register1',async(req,res)=>{
-    console.log('register')
-    console.log(req.body)
-    console.log(req.body.name)
-    console.log(req.body.age)
-    console.log(req.body.email)
-    const user = new User()
-    user.name=req.body.name
-    user.age=req.body.age
-    user.email=req.body.email
-    user.phone=req.body.phone
-    user.gender=req.body.gender
-    user.c_date=new Date()
-    user.user_id=req.body.user_id
-    user.user_pw=req.body.user_pw
-    console.log(user)
-    console.log(typeof(user.age))
-    console.log(typeof(user.gender))
-    
-
-    res.json( {message:"register clear"} )
-})
 // mypage update 해야함 
 app.post('/mypage',can_login, async (req,res)=>{
     const up_user=AppDataSource.getRepository(User)
@@ -236,9 +192,9 @@ app.post('/mypage',can_login, async (req,res)=>{
         email: req.body.email,
         phone: req.body.phone,
         gender: req.body.gender,
-        c_date: req.body.c_date,
         m_date: new Date(),
     })
+    // .set(req.body) 이렇게 해도 괜찮아 
     .where({id:req.user.id})
     .execute()
     .then((data)=>{
@@ -332,16 +288,21 @@ app.get('/blogs/:id',async(req,res)=>{
 //게시물 보기 clear
 app.get('/detail/:id',async(req,res)=>{
     var post_id=parseInt(req.params.id)
-    
-    // if(req.user){
-    //     const us=await User.find({id:req.b})
-    // }
     console.log(req.params.id)
     console.log(typeof(req.params.id))
     const post_detail=await Post.findOneBy({id:post_id})
     const post_comments=await Comment.find_post_key(post_id)
     console.log(post_detail)
     console.log(post_comments)    
+    // if(req.user){
+    //     if(req.user.user_id==post_detail.user_id){
+    //         var message={msg:'myPost'}
+    //         res.json({post_detail,post_comments,message})
+    //     }
+    // }
+    // if(req.user){
+        //     const us=await User.find({id:req.b})
+        // }
     res.json({post_detail,post_comments})
 })
 
@@ -387,7 +348,7 @@ app.post('/detail',can_login,async (req,res)=>{
     NewPost.like=0
     NewPost.comment_num=0
     NewPost.user_key=req.user.id // 이게 맞나? => 맞다 ^^^^^^^^^
-    NewPost.hide_user=req.body.hide_user
+    NewPost.hide_user=false
     await NewPost.save()
     console.log(NewPost)
     res.status(201).json({message:"post save"})

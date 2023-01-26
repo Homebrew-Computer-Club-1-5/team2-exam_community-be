@@ -9,8 +9,7 @@ export class Comment extends BaseEntity{
     @ManyToOne(type=>Post,post=>post.comments,{
         onDelete:"CASCADE",
     })
-    @JoinTable()
-    post_key:Post
+    @JoinTable()    post_key:Post
     @Column()
     user_id:string
     @Column("text")

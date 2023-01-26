@@ -37,6 +37,7 @@ AppDataSource.initialize().then(async () => {
     post.click_num=0
     post.like=1
     post.comment_num=1
+    post.hide_user=false
     post.user_key=user
     await AppDataSource.manager.save(post) 
     console.log("Saved a new post with id: " + post.id)
