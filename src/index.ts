@@ -5,12 +5,13 @@ import {Post} from "./entity/Post"
 import {Comment} from "./entity/Comment"
 import { appendFile } from "fs"
 import { Request, Response, application } from "express"
-import {  DataSource, EntityManager, UpdateQueryBuilder  } from "typeorm"
+import {  DataSource, EntityManager, EntitySchemaEmbeddedColumnOptions, UpdateQueryBuilder  } from "typeorm"
 // import { json } from "body-parser"
 import { isArrayBuffer } from "util/types"
-import { disconnect, resourceUsage } from "process"
+import { allowedNodeEnvironmentFlags, disconnect, resourceUsage } from "process"
 import { userInfo } from "os"
 import { resourceLimits } from "worker_threads"
+import { generateKey } from "crypto"
 
 
 var typeorm =require("typeorm")
@@ -31,6 +32,8 @@ const methodOverride=require('method-override');
 app.use(methodOverride('_method'));
 const dotenv=require('dotenv')
 const cokie=require('cookie-parser')
+const nodemailer = require('nodemailer');
+const admin_info = require('../config/admin.json')
 
 AppDataSource.initialize().then(async () => {
 
@@ -142,7 +145,6 @@ app.post('/id_compare',async(req,res)=>{
     }else{
         res.json({boo:true})
     }
-    
 })
 //id find
 app.post('/find_id',async (req,res)=>{
@@ -179,6 +181,10 @@ app.post('/register',async(req,res)=>{
     user.user_pw=req.body.user_pw
     await user.save()
     res.json( {message:"register clear"} )
+})
+app.delete('/register',can_login,async(req,res)=>{
+    console.log('remove user')
+    await User.remove(req.user)
 })
 // mypage update 해야함 
 app.post('/mypage',can_login, async (req,res)=>{
@@ -291,18 +297,26 @@ app.get('/detail/:id',async(req,res)=>{
     console.log(req.params.id)
     console.log(typeof(req.params.id))
     const post_detail=await Post.findOneBy({id:post_id})
+    //조회수 1증가
+    post_detail.click_num=post_detail.click_num++;
+    await Post.save(post_detail)//저장
+    // const post_comments=await Comment.findAndCount({post_key:post_detail.id})
     const post_comments=await Comment.find_post_key(post_id)
     console.log(post_detail)
     console.log(post_comments)    
-    // if(req.user){
-    //     if(req.user.user_id==post_detail.user_id){
-    //         var message={msg:'myPost'}
-    //         res.json({post_detail,post_comments,message})
-    //     }
-    // }
-    // if(req.user){
-        //     const us=await User.find({id:req.b})
-        // }
+    
+    //요청자가 작성자이면
+    if(req.user.user_id==post_detail.user_id){
+        var message={msg:'myPost'}
+        if(post_detail.hide_user==true){// 유저가 숨기기 원하면 넘기기전에 아이디를 수정 해서 리턴
+            post_detail.user_id="cloaking";
+        }
+        res.json({post_detail,post_comments,message})
+    }
+    if(post_detail.hide_user==true){// 유저가 숨기기 원하면 넘기기전에 아이디를 수정 해서 리턴
+        post_detail.user_id="cloaking";
+    }
+
     res.json({post_detail,post_comments})
 })
 
@@ -423,14 +437,25 @@ app.post('/comment',can_login,async(req,res)=>{
     NewComment.content=req.body.content
     NewComment.c_date=new Date()
     await NewComment.save()
+
+    //update post coment_num++
+    // const like=await Post.findOneBy({id:req.body.post_key})
+    // like.like_up();// 하나증가
+    // 하나 증가
+    const post = await Post.findOneBy({id:req.body.post_key})
+    post.comment_num=post.comment_num++;
+    await Post.save(post)
     res.json({message:"comment save"})
 })
 //보내줘 coment id 값 
 app.delete('/comment/:id',can_login,async(req,res)=>{
     var comment=parseInt(req.params.id)
-    var comment_d=new Comment()
-    comment_d=await Comment.findOneBy({id:comment})
+    const comment_d=await Comment.findOneBy({id:comment})
     if(comment_d.user_id==req.user.user_id){
+        //update post coment_num--
+        const post = await Post.findOneBy({id:req.body.post_key})
+        post.comment_num=post.comment_num--;
+        await Post.save(post)
         await comment_d.remove()
         res.json({message: " delete comment"})
     }else{
@@ -458,4 +483,36 @@ passport.deserializeUser(async(id,done)=>{
     }
 });
 
-
+//mail
+// const main = async () => {
+//     let transporter = nodemailer.createTransport({
+//       service: 'gmail',
+//       host: 'smtp.gmail.com',
+//       port: 587,
+//       secure: false,
+//       auth: {
+//         user: admin_info.gmail_id,
+//         pass: admin_info.gmail_pw,
+//       },
+//     });
+  
+//     // send mail with defined transport object
+//     let info = await transporter.sendMail({
+//       from: `"HomeBrew Team" <${admin_info.gmail_id}>`,
+//       to: email,
+//       subject: 'HomeBrew Auth Number',
+//       text: generatedAuthNumber,
+//       html: `<b>${generatedAuthNumber}</b>`,
+//     });
+  
+//     console.log('Message sent: %s', info.messageId);
+//     // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
+  
+//     res.status(200).json({
+//       status: 'Success',
+//       code: 200,
+//       message: 'Sent Auth Email',
+//     });
+//   };
+  
+//   main().catch(console.error);

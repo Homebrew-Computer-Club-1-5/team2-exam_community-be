@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, ManyToOne, OneToMany, BaseEntity, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, JoinColumn, JoinTable } from "typeorm"
+import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, ManyToOne, OneToMany, BaseEntity, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, JoinColumn, JoinTable, AfterUpdate } from "typeorm"
 import { User } from "./User"
 import { Comment } from "./Comment"
 
@@ -25,6 +25,8 @@ export class Post extends BaseEntity{
     @Column()
     like:number
     @Column()
+    like_user:string[]
+    @Column()
     comment_num:number
     @Column()
     hide_user:boolean
@@ -44,9 +46,5 @@ export class Post extends BaseEntity{
         .where("post.num = ", {num})
         .getOne();
     }
-    user_compare(input:Post){
-        if(input.user_key==this.user_key){
-            
-        }
-    }
+
 }

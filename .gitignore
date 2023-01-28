@@ -8,3 +8,4 @@ config/
 exam-student-community/
 src/passport.ts
 src/can_login.ts
+src/entity/likes.ts

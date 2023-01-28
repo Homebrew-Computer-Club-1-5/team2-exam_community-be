@@ -9,7 +9,8 @@ export class Comment extends BaseEntity{
     @ManyToOne(type=>Post,post=>post.comments,{
         onDelete:"CASCADE",
     })
-    @JoinTable()    post_key:Post
+    @JoinTable()    
+    post_key:Post
     @Column()
     user_id:string
     @Column("text")
@@ -20,6 +21,6 @@ export class Comment extends BaseEntity{
 	static find_post_key(post_key:number) {
         return this.createQueryBuilder("comment")
         .where("comment.post_key = :post_key", {post_key})
-        .getMany();
+        .getManyAndCount();
     }
 }
