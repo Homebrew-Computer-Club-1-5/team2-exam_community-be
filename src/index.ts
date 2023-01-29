@@ -94,7 +94,7 @@ function can_login(req,res,next){
 
 //login
 app.post('/login',passport.authenticate('local',{
-    failureRedirect: '/fail_login'
+    failureRedirect: '/fail_login'// fail시 api 호출  
 }),async (req,res)=>{ 
     console.log(req.user)
     var res_user=req.user
@@ -305,19 +305,19 @@ app.get('/detail/:id',async(req,res)=>{
     console.log(post_detail)
     console.log(post_comments)    
     
-    //요청자가 작성자이면
-    if(req.user.user_id==post_detail.user_id){
-        var message={msg:'myPost'}
-        if(post_detail.hide_user==true){// 유저가 숨기기 원하면 넘기기전에 아이디를 수정 해서 리턴
-            post_detail.user_id="cloaking";
-        }
-        res.json({post_detail,post_comments,message})
-    }
+    var Ruser_id='';
     if(post_detail.hide_user==true){// 유저가 숨기기 원하면 넘기기전에 아이디를 수정 해서 리턴
+        Ruser_id=post_detail.user_id;
         post_detail.user_id="cloaking";
     }
 
-    res.json({post_detail,post_comments})
+    //요청자가 작성자이면
+    if(req.user.user_id==Ruser_id){
+        var message={msg:'myPost'}
+        res.json({post_detail,post_comments,message})
+    }else{
+        res.json({post_detail,post_comments})
+    }
 })
 
 
@@ -384,6 +384,7 @@ app.delete('/detail/:id',can_login,async(req,res)=>{
         res.json({message:"delete fail no "})
     }
 })
+// 이건 무슨 기능???
 app.get('/finduser',async(req,res)=>{
     const user=await User.findOne({where:{id:1}})
     const post=await Post.findAndCount({where:{id:1}})
@@ -516,3 +517,17 @@ passport.deserializeUser(async(id,done)=>{
 //   };
   
 //   main().catch(console.error);
+
+
+async function rand(){
+    var RandomValue:string=Math.random().toString(36).slice(2);
+    return RandomValue;
+}
+app.post('/newpw',async (req,res)=>{
+    //유저 를 찾아와서
+    //랜덤값 생성
+    var rend_value=rand();
+    //유저 비번에 저장
+    // 유저의 메일로 렌덤값 전송
+
+})
