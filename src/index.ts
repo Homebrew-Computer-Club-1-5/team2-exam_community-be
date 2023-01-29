@@ -310,14 +310,14 @@ app.get('/detail/:id',async(req,res)=>{
         Ruser_id=post_detail.user_id;
         post_detail.user_id="cloaking";
     }
-
+    res.json({post_detail,post_comments})
     //요청자가 작성자이면
-    if(req.user.user_id==Ruser_id){
-        var message={msg:'myPost'}
-        res.json({post_detail,post_comments,message})
-    }else{
-        res.json({post_detail,post_comments})
-    }
+    // if(req.user.user_id==Ruser_id){
+    //     var message={msg:'myPost'}
+    //     res.json({post_detail,post_comments,message})
+    // }else{
+    //     res.json({post_detail,post_comments})
+    // }
 })
 
 
