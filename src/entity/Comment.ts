@@ -21,6 +21,7 @@ export class Comment extends BaseEntity{
 	static find_post_key(post_key:number) {
         return this.createQueryBuilder("comment")
         .where("comment.post_key = :post_key", {post_key})
-        .getManyAndCount();
+        .getMany();
+        // .getManyAndCount();
     }
 }

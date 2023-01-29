@@ -24,8 +24,8 @@ export class Post extends BaseEntity{
     click_num:number
     @Column()
     like:number
-    @Column()
-    like_user:string[]
+    // @Column()
+    // like_user:string[]
     @Column()
     comment_num:number
     @Column()
