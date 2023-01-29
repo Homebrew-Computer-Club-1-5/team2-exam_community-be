@@ -298,7 +298,8 @@ app.get('/detail/:id',async(req,res)=>{
     console.log(typeof(req.params.id))
     const post_detail=await Post.findOneBy({id:post_id})
     //조회수 1증가
-    post_detail.click_num=post_detail.click_num++;
+    
+    post_detail.click_num=post_detail.click_num+1;
     await Post.save(post_detail)//저장
     // const post_comments=await Comment.findAndCount({post_key:post_detail.id})
     const post_comments=await Comment.find_post_key(post_id)
@@ -443,8 +444,9 @@ app.post('/comment',can_login,async(req,res)=>{
     // const like=await Post.findOneBy({id:req.body.post_key})
     // like.like_up();// 하나증가
     // 하나 증가
-    const post = await Post.findOneBy({id:req.body.post_key})
-    post.comment_num=post.comment_num++;
+    var post=new Post()
+    post = await Post.findOneBy({id:req.body.post_key})
+    post.comment_num=post.comment_num+1;
     await Post.save(post)
     res.json({message:"comment save"})
 })
@@ -454,8 +456,9 @@ app.delete('/comment/:id',can_login,async(req,res)=>{
     const comment_d=await Comment.findOneBy({id:comment})
     if(comment_d.user_id==req.user.user_id){
         //update post coment_num--
-        const post = await Post.findOneBy({id:req.body.post_key})
-        post.comment_num=post.comment_num--;
+        var post=new Post()
+        post = await Post.findOneBy({id:req.body.post_key})
+        post.comment_num=post.comment_num-1;
         await Post.save(post)
         await comment_d.remove()
         res.json({message: " delete comment"})
