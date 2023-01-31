@@ -12,6 +12,8 @@ import { allowedNodeEnvironmentFlags, disconnect, resourceUsage } from "process"
 import { userInfo } from "os"
 import { resourceLimits } from "worker_threads"
 import { generateKey } from "crypto"
+import { v4 as uuidv4} from 'uuid';
+
 
 
 var typeorm =require("typeorm")
@@ -171,6 +173,7 @@ app.get('/register',can_login,async(req,res)=>{
 
 app.post('/register',async(req,res)=>{
     const user = new User()
+    user.uuid=uuidv4();
     user.name=req.body.name
     user.age=parseInt(req.body.age) 
     user.email=req.body.email
@@ -354,6 +357,7 @@ app.post('/findpost/:id',async(req,res)=>{
 
 app.post('/detail',can_login,async (req,res)=>{
     const NewPost = new Post()
+    NewPost.uuid=req.user.uuid;
     NewPost.user_id=req.user.user_id
     NewPost.title=req.body.title
     NewPost.c_date=new Date()
@@ -432,6 +436,7 @@ app.put('/detail/:id',can_login,async(req,res)=>{
 //보내줘 post_key , content
 app.post('/comment',can_login,async(req,res)=>{
     const NewComment=new Comment()
+    NewComment.uuid=req.user.uuid;
     //반드시 답글 달때는 게시물 유일키도 같이 보내야함
     console.log(typeof("post_key type"+req.body.post_key))
     NewComment.post_key=req.body.post_key 

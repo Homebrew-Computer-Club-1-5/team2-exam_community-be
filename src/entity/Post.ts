@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, ManyToOne, OneToMany, BaseEntity, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, JoinColumn, JoinTable, AfterUpdate } from "typeorm"
+import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, ManyToOne, OneToMany, BaseEntity, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, JoinColumn, JoinTable, AfterUpdate ,PrimaryColumn} from "typeorm"
 import { User } from "./User"
 import { Comment } from "./Comment"
 
@@ -6,6 +6,8 @@ import { Comment } from "./Comment"
 export class Post extends BaseEntity{
     @PrimaryGeneratedColumn()
     id: number
+    @PrimaryColumn()
+    uuid: string;
     @Column()
     user_id:string
     @Column()

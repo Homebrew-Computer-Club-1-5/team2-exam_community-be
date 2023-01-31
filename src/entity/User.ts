@@ -1,11 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, BeforeInsert, JoinColumn } from "typeorm"
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, BeforeInsert, JoinColumn ,PrimaryColumn} from "typeorm"
 import { Post } from "./Post"
 import * as bcrypt from 'bcrypt'; // 암호화 관련
+import { RandomUUIDOptions } from "crypto";
 @Entity('users')
 export class User extends BaseEntity{
 
     @PrimaryGeneratedColumn()
     id: number
+    @PrimaryColumn()
+    uuid: string;
     @Column() // 컬럼 명을 ()안에 넣어도 괜찮은가?
     name: string
     @Column()

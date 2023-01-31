@@ -1,14 +1,19 @@
+//db 생성 == CREATE DATABASE homebrew default CHARACTER SET UTF8; 
+// DROP TABLE  homebrew;
+
 import { QueryExpressionMap } from "typeorm/query-builder/QueryExpressionMap"
 import { AppDataSource } from "./data-source"
 import { User } from "./entity/User"
 import {Post} from "./entity/Post"
 import {Comment} from "./entity/Comment"
+import {v4 as uuidv4} from 'uuid';
 const admin = require('../config/admin.json')
 
 AppDataSource.initialize().then(async () => {
 
     console.log("Inserting a new user into the database...")
     const user = new User()
+    user.uuid=uuidv4();
     user.name = "minseok"
     user.age = 25
     user.email="aaaaa@gmail.com"
@@ -28,6 +33,7 @@ AppDataSource.initialize().then(async () => {
 
     //post 
     const post=new Post()
+    post.uuid=user.uuid
     post.user_id=admin.ID
     post.title="test1"
     post.c_date=new Date()
@@ -45,10 +51,12 @@ AppDataSource.initialize().then(async () => {
     console.log("Loading users from the database...")
     const posts = await AppDataSource.manager.find(Post)
     console.log("Loaded posts: ", posts)
-
+    //comment
     const comment=new Comment()
+    comment.uuid=user.uuid
     comment.c_date=new Date()
     comment.post_key=post
+    comment.post_id=post.id
     comment.user_id=user.user_id
     comment.content="test commnet"
 

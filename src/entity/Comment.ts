@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, BaseEntity, CreateDateColumn, JoinTable } from "typeorm"
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, BaseEntity, CreateDateColumn, JoinTable ,PrimaryColumn} from "typeorm"
 import { Post } from "./Post"
 import { User } from "./User"
 
@@ -6,6 +6,10 @@ import { User } from "./User"
 export class Comment extends BaseEntity{
     @PrimaryGeneratedColumn()
     id: number
+    @PrimaryColumn()
+    uuid: string;
+    @Column()
+    post_id:number
     @ManyToOne(type=>Post,post=>post.comments,{
         onDelete:"CASCADE",
     })
@@ -22,6 +26,6 @@ export class Comment extends BaseEntity{
         return this.createQueryBuilder("comment")
         .where("comment.post_key = :post_key", {post_key})
         .getMany();
-        // .getManyAndCount();
+        // .getManyAndCount(); // 갯수 까지 같이 가져오는것
     }
 }
