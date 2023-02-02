@@ -8,7 +8,7 @@ export class Newpw extends BaseEntity{
     @Column()
     user_key:number
     @Column()
-    user_email:string
+    user_id:string
     @Column()
     token:string
     @CreateDateColumn()
