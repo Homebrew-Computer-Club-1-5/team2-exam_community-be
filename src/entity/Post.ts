@@ -1,15 +1,15 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, ManyToOne, OneToMany, BaseEntity, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, JoinColumn, JoinTable, AfterUpdate ,PrimaryColumn, Like} from "typeorm"
 import { User } from "./User"
 import { Comment } from "./Comment"
-import { Likes } from "./Likes";
-// import { Likes } from "./likes";
+// import { Likes } from "./Likes";
+
 
 @Entity('post')
 export class Post extends BaseEntity{
     @PrimaryGeneratedColumn()
     id: number
-    @PrimaryColumn()
-    uuid: string;
+    // @PrimaryColumn()
+    // uuid: string;
     @Column()
     user_id:string
     @Column()
@@ -41,8 +41,8 @@ export class Post extends BaseEntity{
     comments:Comment[]
     
     //like 
-    @OneToMany(()=>Likes,(likes)=>likes.post)
-    likeUser:Likes[];
+    // @OneToMany(()=>Likes,(likes)=>likes.post)
+    // likeUser:Likes[];
     
 
 

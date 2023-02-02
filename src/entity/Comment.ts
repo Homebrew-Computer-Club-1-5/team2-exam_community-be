@@ -6,8 +6,8 @@ import { User } from "./User"
 export class Comment extends BaseEntity{
     @PrimaryGeneratedColumn()
     id: number
-    @PrimaryColumn()
-    uuid: string;
+    // @PrimaryColumn()
+    // uuid: string;
     @Column()
     post_id:number
     @ManyToOne(type=>Post,post=>post.comments,{

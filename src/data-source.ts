@@ -4,7 +4,7 @@ import { User } from "./entity/User"
 import { Comment } from "./entity/Comment"
 import { Post } from "./entity/Post"
 import { Newpw } from "./entity/Newpw"
-import { Likes } from "./entity/Likes"
+// import { Likes } from "./entity/Likes"
 
 const db_config=require('../config/db-config.json') // db setting file
 
@@ -18,7 +18,7 @@ export const AppDataSource = new DataSource({
     database: db_config.database,
     synchronize: true,
     logging: false,
-    entities: [User,Post,Comment,Newpw,Likes,BaseEntity],
+    entities: [User,Post,Comment,Newpw,BaseEntity],
     migrations: [],
     subscribers: [],
 })
