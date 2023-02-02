@@ -369,24 +369,6 @@ app.get("/detail/:id", async (req, res) => {
   // }
 });
 
-
-app.post('/detail',can_login,async (req,res)=>{
-    const NewPost = new Post()
-    // NewPost.uuid=req.user.uuid;
-    NewPost.user_id=req.user.user_id
-    NewPost.user_name=req.user.user_name
-    NewPost.title=req.body.title
-    NewPost.c_date=new Date()
-    NewPost.num=parseInt(req.body.num)
-    NewPost.content=req.body.content
-    NewPost.click_num=0
-    NewPost.comment_num=0
-    NewPost.user_key=req.user.id // 이게 맞나? => 맞다 ^^^^^^^^^
-    NewPost.hide_user=false
-    await NewPost.save()
-    console.log(NewPost)
-    res.status(201).json({message:"post save"})
-
 app.post("/detail", can_login, async (req, res) => {
   const NewPost = new Post();
   // NewPost.uuid=req.user.uuid;
@@ -466,44 +448,44 @@ app.put("/detail/:id", can_login, async (req, res) => {
 
 //답글 작성
 //보내줘 post_key , content
-app.post('/comment',can_login,async(req,res)=>{
-    const NewComment=new Comment()
-    // NewComment.uuid=req.user.uuid;
-    //반드시 답글 달때는 게시물 유일키도 같이 보내야함
-    console.log(typeof("post_key type"+req.body.post_key))
-    NewComment.post_id=req.body.post_key
-    NewComment.post_key=req.body.post_key 
-    NewComment.user_id=req.user.user_id 
-    NewComment.user_name=req.user.name
-    NewComment.content=req.body.content
-    NewComment.c_date=new Date()
-    await NewComment.save()
-    //update post coment_num++
-    // const like=await Post.findOneBy({id:req.body.post_key})
-    // like.like_up();// 하나증가
-    // 하나 증가
-    var post=new Post()
-    post = await Post.findOneBy({id:req.body.post_key})
-    post.comment_num=post.comment_num+1;
-    await Post.save(post)
-    res.json({message:"comment save"})
-})
-//보내줘 coment id 값 
-app.delete('/comment/:id',can_login,async(req,res)=>{
-    var comment=parseInt(req.params.id)
-    const comment_d=await Comment.findOneBy({id:comment})
-    if(comment_d.user_id==req.user.user_id){
-        //update post coment_num--
-        var post=new Post()
-        post = await Post.findOneBy({id:req.body.post_key})
-        post.comment_num=post.comment_num-1;
-        await Post.save(post)
-        await comment_d.remove()
-        res.json({message: " delete comment"})
-    }else{
-        res.json({message: "don`t delete"})
-    }
-})
+app.post("/comment", can_login, async (req, res) => {
+  const NewComment = new Comment();
+  // NewComment.uuid=req.user.uuid;
+  //반드시 답글 달때는 게시물 유일키도 같이 보내야함
+  console.log(typeof ("post_key type" + req.body.post_key));
+  NewComment.post_id = req.body.post_key;
+  NewComment.post_key = req.body.post_key;
+  NewComment.user_id = req.user.user_id;
+  NewComment.user_name = req.user.name;
+  NewComment.content = req.body.content;
+  NewComment.c_date = new Date();
+  await NewComment.save();
+  //update post coment_num++
+  // const like=await Post.findOneBy({id:req.body.post_key})
+  // like.like_up();// 하나증가
+  // 하나 증가
+  var post = new Post();
+  post = await Post.findOneBy({ id: req.body.post_key });
+  post.comment_num = post.comment_num + 1;
+  await Post.save(post);
+  res.json({ message: "comment save" });
+});
+//보내줘 coment id 값
+app.delete("/comment/:id", can_login, async (req, res) => {
+  var comment = parseInt(req.params.id);
+  const comment_d = await Comment.findOneBy({ id: comment });
+  if (comment_d.user_id == req.user.user_id) {
+    //update post coment_num--
+    var post = new Post();
+    post = await Post.findOneBy({ id: req.body.post_key });
+    post.comment_num = post.comment_num - 1;
+    await Post.save(post);
+    await comment_d.remove();
+    res.json({ message: " delete comment" });
+  } else {
+    res.json({ message: "don`t delete" });
+  }
+});
 
 passport.serializeUser((user, done) => {
   done(null, user.id);
@@ -583,6 +565,7 @@ app.put("/api/newpw", async (req, res) => {
     res.json({ success: true, message: "new create pw " });
   }
 });
+
 async function rand(): Promise<string> {
   var RandomValue = Math.random().toString(36).slice(2);
   return RandomValue;
