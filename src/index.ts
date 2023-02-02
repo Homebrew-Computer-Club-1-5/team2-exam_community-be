@@ -582,7 +582,7 @@ app.put("/api/newpw", async (req, res) => {
   var i_pw = req.body.pw;
   var newpw = await Newpw.findOne({ where: { token: i_token } }); //토큰으로 조회 있으면 수정하려하는 사람이니깐
   if (newpw == null) {
-    res.json({ succes: false, message: "token wrong or missed" });
+    res.json({ success: false, message: "token wrong or missed" });
   } else {
     var user = await User.findOne({ where: { id: newpw.user_key } }); // user id 조회
     user.user_pw = i_pw; //변경
