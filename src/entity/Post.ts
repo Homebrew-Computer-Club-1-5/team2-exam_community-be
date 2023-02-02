@@ -1,6 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, ManyToOne, OneToMany, BaseEntity, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, JoinColumn, JoinTable, AfterUpdate ,PrimaryColumn} from "typeorm"
+import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, ManyToOne, OneToMany, BaseEntity, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, JoinColumn, JoinTable, AfterUpdate ,PrimaryColumn, Like} from "typeorm"
 import { User } from "./User"
 import { Comment } from "./Comment"
+import { Likes } from "./Likes";
+// import { Likes } from "./likes";
 
 @Entity('post')
 export class Post extends BaseEntity{
@@ -25,10 +27,6 @@ export class Post extends BaseEntity{
     @Column()
     click_num:number
     @Column()
-    like:number
-    // @Column()
-    // like_user:string[]
-    @Column()
     comment_num:number
     @Column()
     hide_user:boolean
@@ -41,6 +39,12 @@ export class Post extends BaseEntity{
         cascade:true,
     })
     comments:Comment[]
+    
+    //like 
+    @OneToMany(()=>Likes,(likes)=>likes.post)
+    likeUser:Likes[];
+    
+
 
     static find_num(num:number) {
         return this.createQueryBuilder("post")

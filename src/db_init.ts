@@ -1,5 +1,7 @@
-//db 생성 == CREATE DATABASE homebrew default CHARACTER SET UTF8; 
-// DROP TABLE  homebrew;
+//db 생성
+// CREATE DATABASE homebrew default CHARACTER SET UTF8; 
+//db drop
+// DROP database homebrew;
 
 import { QueryExpressionMap } from "typeorm/query-builder/QueryExpressionMap"
 import { AppDataSource } from "./data-source"
@@ -7,6 +9,9 @@ import { User } from "./entity/User"
 import {Post} from "./entity/Post"
 import {Comment} from "./entity/Comment"
 import {v4 as uuidv4} from 'uuid';
+import { Newpw } from "./entity/Newpw"
+import { Like } from "typeorm"
+import { Likes } from "./entity/Likes"
 const admin = require('../config/admin.json')
 
 AppDataSource.initialize().then(async () => {
@@ -41,7 +46,6 @@ AppDataSource.initialize().then(async () => {
     post.num=1
     post.content="testsetsetsetsetsetsetestsetset"
     post.click_num=0
-    post.like=1
     post.comment_num=1
     post.hide_user=false
     post.user_key=user
@@ -66,5 +70,24 @@ AppDataSource.initialize().then(async () => {
     console.log("Loading comment from the database...")
     const comments = await AppDataSource.manager.find(Comment)
     console.log("Loaded comments : ", comments)
+
+
+
+    const newpw=new Newpw()
+    newpw.user_email=user.email
+    newpw.user_key=user.id
+    newpw.token='aaaa'
+    newpw.c_date=new Date()
+    await AppDataSource.manager.save(newpw) 
     
+    const like=new Likes()
+    like.postId=post.id
+    like.userId=user.id
+    
+    await AppDataSource.manager.save(like)
+
+    // await Likes.remove(like)
+    // await Newpw.remove(newpw)
+
+
 }).catch(error => console.log(error))

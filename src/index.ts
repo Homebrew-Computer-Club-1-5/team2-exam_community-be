@@ -3,6 +3,8 @@ import { AppDataSource } from "./data-source"
 import { User } from "./entity/User"
 import {Post} from "./entity/Post"
 import {Comment} from "./entity/Comment"
+import { Newpw } from "./entity/Newpw"
+import { Likes } from "./entity/Likes"
 import { appendFile } from "fs"
 import { Request, Response, application } from "express"
 import {  DataSource, EntityManager, EntitySchemaEmbeddedColumnOptions, UpdateQueryBuilder  } from "typeorm"
@@ -364,7 +366,6 @@ app.post('/detail',can_login,async (req,res)=>{
     NewPost.num=parseInt(req.body.num)
     NewPost.content=req.body.content
     NewPost.click_num=0
-    NewPost.like=0
     NewPost.comment_num=0
     NewPost.user_key=req.user.id // 이게 맞나? => 맞다 ^^^^^^^^^
     NewPost.hide_user=false
@@ -492,6 +493,41 @@ passport.deserializeUser(async(id,done)=>{
     }
 });
 
+
+//새로운 이메일 받고 조회 -> 그유저 id email 를 newpw 에넣고 토큰값도 넣고 **** 여기 api에서 메일 날려야함 ****
+app.post('/api/newpw',async(req,res)=>{
+    var i_email=req.body.email;
+    // user 가 없는 경우
+    var user=await User.findOne({where:{email:i_email}})
+    // newpw 에 있는 경우와 없는 경우
+    var newpw=new Newpw()
+    newpw=await Newpw.findOne({where:{user_email:i_email}})  // 있다면 가져오고 없다면 undifinde
+    // baseEntity .save는 기존것이 있으면 업데이트 없으면 생성 
+    var i_token=await rand()
+    newpw.user_key=user.id
+    newpw.user_email=i_email
+    newpw.token=i_token
+    newpw.c_date=new Date()
+    await newpw.save() // 일정시간이 지나면 삭제 해야하는것이 좋을듯
+    //재원 email 로 i_token을 보내주어야함   
+    res.json({message:"new token good"})
+
+})
+//  새로운 비번 email id 토큰  put 사용해서 토큰비교후 유저 비번 수정 하고 newpw 삭제
+app.put('/api/newpw',async(req,res)=>{
+    // 토큰으로 조회 ,newpw 에 없는경우
+    var token=req.body.token
+    var pw=req.body.pw
+    var newpw= await Newpw.findOne({where:{token:token}})//토큰으로 조회 있으면 수정하려하는 사람이니깐
+    var user =await User.findOne({where:{id:newpw.user_key}})// user id 조회
+    user.user_pw=pw //변경
+    user.saveEncryptedPassword()// 이거하면 다시 객체 비번 hash ㄱㄱ 이거 될디 모르겠어 한번 해봐야함
+    await user.save()  
+    await Newpw.remove(newpw) // 완료후 삭제 
+    res.json({message:"new crate pw "})
+
+})
+
 //mail
 // const main = async () => {
 //     let transporter = nodemailer.createTransport({
@@ -527,15 +563,7 @@ passport.deserializeUser(async(id,done)=>{
 //   main().catch(console.error);
 
 
-async function rand(){
-    var RandomValue:string=Math.random().toString(36).slice(2);
+async function rand():Promise <string> {
+    var RandomValue=Math.random().toString(36).slice(2);
     return RandomValue;
 }
-app.post('/newpw',async (req,res)=>{
-    //유저 를 찾아와서
-    //랜덤값 생성
-    var rend_value=rand();
-    //유저 비번에 저장
-    // 유저의 메일로 렌덤값 전송
-
-})
