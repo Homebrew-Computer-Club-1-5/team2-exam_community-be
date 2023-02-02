@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, ManyToOne, OneToMany, BaseEntity, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, JoinColumn, JoinTable, AfterUpdate ,PrimaryColumn, Like} from "typeorm"
 import { User } from "./User"
 import { Comment } from "./Comment"
-// import { Likes } from "./Likes";
+import { Likes } from "./Likes";
 
 
 @Entity('post')
@@ -40,9 +40,9 @@ export class Post extends BaseEntity{
     })
     comments:Comment[]
     
-    //like 
-    // @OneToMany(()=>Likes,(likes)=>likes.post)
-    // likeUser:Likes[];
+    // like 
+    @OneToMany(()=>Likes,(likes)=>likes.post)
+    likeUser:Likes[];
     
 
 

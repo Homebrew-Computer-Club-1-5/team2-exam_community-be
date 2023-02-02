@@ -2,7 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity, CreateDa
 import { Post } from "./Post"
 import * as bcrypt from 'bcrypt'; // 암호화 관련
 import { RandomUUIDOptions } from "crypto";
-// import { Likes } from "./Likes";
+import { Likes } from "./Likes";
 
 @Entity('users')
 export class User extends BaseEntity{
@@ -40,8 +40,8 @@ export class User extends BaseEntity{
     })
     posts:Post[]
 
-    // @OneToMany(()=>Likes,(likes)=>likes.user)
-    // likePost:Likes[];
+    @OneToMany(()=>Likes,(likes)=>likes.user)
+    likePost:Likes[];
     
     static findbyid(user_id: string) {
         return this.createQueryBuilder("user")
