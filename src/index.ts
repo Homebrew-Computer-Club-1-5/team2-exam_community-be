@@ -386,6 +386,7 @@ app.post('/detail',can_login,async (req,res)=>{
     const NewPost = new Post()
     // NewPost.uuid=req.user.uuid;
     NewPost.user_id=req.user.user_id
+    NewPost.user_name=req.user.user_name
     NewPost.title=req.body.title
     NewPost.c_date=new Date()
     NewPost.num=parseInt(req.body.num)

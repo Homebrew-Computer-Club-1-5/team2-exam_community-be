@@ -13,6 +13,8 @@ export class Post extends BaseEntity{
     @Column()
     user_id:string
     @Column()
+    user_name:string
+    @Column()
     title:string
     @CreateDateColumn()
     c_date:Date

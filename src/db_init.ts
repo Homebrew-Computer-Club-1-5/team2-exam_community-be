@@ -40,6 +40,7 @@ AppDataSource.initialize().then(async () => {
     const post=new Post()
     // post.uuid=user.uuid
     post.user_id=admin.ID
+    post.user_name = user.name
     post.title="test1"
     post.c_date=new Date()
     post.m_date=new Date()
