@@ -369,7 +369,7 @@ app.post('/detail',can_login,async (req,res)=>{
     NewPost.uuid=req.user.uuid;
     NewPost.user_id=req.user.user_id
     NewPost.title=req.body.title
-    NewPost.c_date=new Date(getTime())
+    NewPost.c_date=new Date()
     NewPost.num=parseInt(req.body.num)
     NewPost.content=req.body.content
     NewPost.click_num=0
@@ -450,7 +450,7 @@ app.post('/comment',can_login,async(req,res)=>{
     NewComment.post_key=req.body.post_key 
     NewComment.user_id=req.user.user_id 
     NewComment.content=req.body.content
-    NewComment.c_date=new Date(getTime())
+    NewComment.c_date=new Date()
     await NewComment.save()
     //update post coment_num++
     // const like=await Post.findOneBy({id:req.body.post_key})
