@@ -17,7 +17,7 @@ export class User extends BaseEntity{
     @Column() // 컬럼 명을 ()안에 넣어도 괜찮은가?
     name: string
     @Column()
-    age: number
+    age: string
     @Column()
     email:string
     @Column()

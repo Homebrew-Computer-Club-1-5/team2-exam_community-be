@@ -112,6 +112,24 @@ app.post('/login',passport.authenticate('local',{
     res_user.user_pw=""; // 중요한 pw값은 넘기지 않겠다는 마음으로
     res.json(res_user)
 })
+
+// app.post('api/login',function(req,res,next){
+//     passport.authenticate("local",function(req,res,info){
+//         if (err) return next(err);
+//         if (user){
+//             req.logIn(user,(err)=>{
+//                 if(err)return next(err);
+//                 var res_user=user;
+//                 res_user.pw=""
+//                 res.json({info:{message:"유저 맞음"},res_user})
+//             })
+//         }else{
+//             res.json({info:info})
+//         }
+//     })(req,res,next)
+// })
+
+
 app.get('/fail_login',(req,res)=>{
     res.status(500).json({message:"login fail "})
 })
@@ -184,7 +202,7 @@ app.post('/register',async(req,res)=>{
     const user = new User()
     // user.uuid=uuidv4();
     user.name=req.body.name
-    user.age=parseInt(req.body.age) 
+    user.age=req.body.age
     user.email=req.body.email
     user.phone=req.body.phone
     user.gender=req.body.gender
@@ -206,7 +224,7 @@ app.post('/mypage',can_login, async (req,res)=>{
     .update(User)
     .set({
         name:req.body.name,
-        age: parseInt(req.body.age) ,
+        age: req.body.age ,
         email: req.body.email,
         phone: req.body.phone,
         gender: req.body.gender,
