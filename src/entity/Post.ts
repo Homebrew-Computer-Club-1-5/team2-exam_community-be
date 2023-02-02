@@ -13,6 +13,8 @@ export class Post extends BaseEntity{
     @Column()
     user_id:string
     @Column()
+    user_name:string
+    @Column()
     title:string
     @CreateDateColumn()
     c_date:Date
@@ -44,8 +46,6 @@ export class Post extends BaseEntity{
     @OneToMany(()=>Likes,(likes)=>likes.post)
     likeUser:Likes[];
     
-
-
     static find_num(num:number) {
         return this.createQueryBuilder("post")
         .select()
