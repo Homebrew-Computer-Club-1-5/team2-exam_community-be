@@ -44,8 +44,6 @@ export class Post extends BaseEntity{
     @OneToMany(()=>Likes,(likes)=>likes.post)
     likeUser:Likes[];
     
-
-
     static find_num(num:number) {
         return this.createQueryBuilder("post")
         .select()

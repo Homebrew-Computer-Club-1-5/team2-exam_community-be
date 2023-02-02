@@ -465,6 +465,7 @@ app.post('/comment',can_login,async(req,res)=>{
     // NewComment.uuid=req.user.uuid;
     //반드시 답글 달때는 게시물 유일키도 같이 보내야함
     console.log(typeof("post_key type"+req.body.post_key))
+    NewComment.post_id=req.body.post_key
     NewComment.post_key=req.body.post_key 
     NewComment.user_id=req.user.user_id 
     NewComment.content=req.body.content
@@ -535,7 +536,6 @@ app.post('/api/newpw',async(req,res)=>{
     await newpw.save() // 일정시간이 지나면 삭제 해야하는것이 좋을듯
     //재원 email 로 i_token을 보내주어야함   
     res.json({message:"new token good"})
-
 })
 //  새로운 비번 email id 토큰  put 사용해서 토큰비교후 유저 비번 수정 하고 newpw 삭제
 app.put('/api/newpw',async(req,res)=>{
@@ -549,7 +549,6 @@ app.put('/api/newpw',async(req,res)=>{
     await user.save()  
     await Newpw.remove(newpw) // 완료후 삭제 
     res.json({message:"new crate pw "})
-
 })
 
 //mail
