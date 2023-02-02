@@ -17,6 +17,8 @@ export class Comment extends BaseEntity{
     post_key:Post
     @Column()
     user_id:string
+    @Column()
+    user_name:string
     @Column("text")
     content: string
     @CreateDateColumn()

@@ -469,6 +469,7 @@ app.post('/comment',can_login,async(req,res)=>{
     NewComment.post_id=req.body.post_key
     NewComment.post_key=req.body.post_key 
     NewComment.user_id=req.user.user_id 
+    NewComment.user_name=req.user.name
     NewComment.content=req.body.content
     NewComment.c_date=new Date()
     await NewComment.save()

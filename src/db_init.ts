@@ -63,6 +63,7 @@ AppDataSource.initialize().then(async () => {
     comment.post_key=post
     comment.post_id=post.id
     comment.user_id=user.user_id
+    comment.user_name=user.name
     comment.content="test commnet"
 
     await AppDataSource.manager.save(comment) 
