@@ -86,8 +86,8 @@ AppDataSource.initialize().then(async () => {
     
     await AppDataSource.manager.save(like)
 
-    // await Likes.remove(like)
-    // await Newpw.remove(newpw)
+    await Likes.remove(like)
+    await Newpw.remove(newpw)
 
 
 }).catch(error => console.log(error))
