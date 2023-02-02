@@ -16,7 +16,14 @@ import { resourceLimits } from "worker_threads"
 import { generateKey } from "crypto"
 import { v4 as uuidv4} from 'uuid';
 
+import moment = require("moment-timezone")
 
+const getTime=()=>{
+    var m= moment().tz("Asia/Seoul");
+    return m.format("YYYY-MM-DD HH:mm:ss");
+}
+// const temp=new Date()
+// const cur=newDate
 
 var typeorm =require("typeorm")
 var EntitySchema=typeorm.EntitySchema;
@@ -362,7 +369,7 @@ app.post('/detail',can_login,async (req,res)=>{
     NewPost.uuid=req.user.uuid;
     NewPost.user_id=req.user.user_id
     NewPost.title=req.body.title
-    NewPost.c_date=new Date()
+    NewPost.c_date=new Date(getTime())
     NewPost.num=parseInt(req.body.num)
     NewPost.content=req.body.content
     NewPost.click_num=0
@@ -443,9 +450,8 @@ app.post('/comment',can_login,async(req,res)=>{
     NewComment.post_key=req.body.post_key 
     NewComment.user_id=req.user.user_id 
     NewComment.content=req.body.content
-    NewComment.c_date=new Date()
+    NewComment.c_date=new Date(getTime())
     await NewComment.save()
-
     //update post coment_num++
     // const like=await Post.findOneBy({id:req.body.post_key})
     // like.like_up();// 하나증가

@@ -14,7 +14,7 @@ export const AppDataSource = new DataSource({
     port: db_config.port,
     username: db_config.user,
     password: db_config.password,
-    timezone:'+09:00',
+    timezone:"+09:00",
     database: db_config.database,
     synchronize: true,
     logging: false,
