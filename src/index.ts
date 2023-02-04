@@ -371,6 +371,34 @@ app.get("/detail/:id", async (req, res) => {
   // }
 });
 
+app.post("/findpost/:id", async (req, res) => {
+  const findPost = AppDataSource.getRepository(Post);
+  const find_id = parseInt(req.params.id);
+  const arr = ["no", "제목", "작성자"];
+  if (arr[find_id] == "제목") {
+    const post = await findPost.find({
+      where: {
+        title: req.body.title,
+      },
+      order: {
+        c_date: "DESC",
+      },
+    }); // 제목
+    console.log(post);
+    res.json(post);
+  }
+  if (arr[find_id] == "작성자") {
+    console.log(find_id);
+    console.log(req.body.user_id);
+    const post = await findPost.find({
+      where: {
+        user_id: req.body.user_id,
+      },
+    }); //작성자
+    res.json(post);
+  }
+});
+
 app.post("/detail", can_login, async (req, res) => {
   const NewPost = new Post();
   // NewPost.uuid=req.user.uuid;
@@ -626,4 +654,3 @@ app.get("/api/post/like", async (req, res) => {
     }
   });
 });
-
