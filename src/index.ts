@@ -370,35 +370,23 @@ app.get("/detail/:id", async (req, res) => {
   // }
 });
 
-//find post 1 제목 2 작성자 3
-app.post("/findpost/:id", async (req, res) => {
-  const findPost = AppDataSource.getRepository(Post);
-  const find_id = parseInt(req.params.id);
-  const arr = ["no", "제목", "작성자"];
-  if (arr[find_id] == "제목") {
-    const post = await findPost.find({
-      where: {
-        title: req.body.title,
-      },
-      order: {
-        c_date: "DESC",
-      },
-    }); // 제목
-    console.log(post);
-    res.json(post);
-  }
-  if (arr[find_id] == "작성자") {
-    console.log(find_id);
-    console.log(req.body.user_id);
-    const post = await findPost.find({
-      where: {
-        user_id: req.body.user_id,
-      },
-    }); //작성자
-    res.json(post);
-  }
+app.post("/detail", can_login, async (req, res) => {
+  const NewPost = new Post();
+  // NewPost.uuid=req.user.uuid;
+  NewPost.user_id = req.user.user_id;
+  NewPost.user_name = req.user.user_name;
+  NewPost.title = req.body.title;
+  NewPost.c_date = new Date();
+  NewPost.num = parseInt(req.body.num);
+  NewPost.content = req.body.content;
+  NewPost.click_num = 0;
+  NewPost.comment_num = 0;
+  NewPost.user_key = req.user.id; // 이게 맞나? => 맞다 ^^^^^^^^^
+  NewPost.hide_user = false;
+  await NewPost.save();
+  console.log(NewPost);
+  res.status(201).json({ message: "post save" });
 });
-
 app.post("/detail", can_login, async (req, res) => {
   const NewPost = new Post();
   // NewPost.uuid=req.user.uuid;
@@ -490,8 +478,10 @@ app.post("/comment", can_login, async (req, res) => {
   // NewComment.uuid=req.user.uuid;
   //반드시 답글 달때는 게시물 유일키도 같이 보내야함
   console.log(typeof ("post_key type" + req.body.post_key));
+  NewComment.post_id = req.body.post_key;
   NewComment.post_key = req.body.post_key;
   NewComment.user_id = req.user.user_id;
+  NewComment.user_name = req.user.name;
   NewComment.content = req.body.content;
   NewComment.c_date = new Date();
   await NewComment.save();
