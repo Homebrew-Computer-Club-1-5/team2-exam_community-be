@@ -23,6 +23,7 @@ import { generateKey } from "crypto";
 import { v4 as uuidv4 } from "uuid";
 import moment = require("moment-timezone");
 import { NodeMailer } from "./utils/node-mailer";
+import { Random } from "./utils/random";
 
 const getTime = () => {
   var m = moment().tz("Asia/Seoul");
@@ -402,6 +403,7 @@ app.post("/detail", can_login, async (req, res) => {
   const NewPost = new Post();
   // NewPost.uuid=req.user.uuid;
   NewPost.user_id = req.user.user_id;
+  // NewPost.user_id = "0912078";
   NewPost.title = req.body.title;
   NewPost.c_date = new Date();
   NewPost.num = parseInt(req.body.num);
@@ -410,9 +412,15 @@ app.post("/detail", can_login, async (req, res) => {
   NewPost.comment_num = 0;
   NewPost.user_key = req.user.id; // 이게 맞나? => 맞다 ^^^^^^^^^
   NewPost.hide_user = false;
-  await NewPost.save();
-  console.log(NewPost);
-  res.status(201).json({ message: "post save" });
+  await NewPost.save()
+    .then((data) => {
+      console.log(NewPost);
+      res.status(201).json({ message: "post save" });
+    })
+    .catch((err) => {
+      console.log("[ERROR]:" + err);
+      res.status(201).json({ message: "post not save" }); //TODO: 이거 status code 통일하는 게 맞을 듯
+    });
 });
 //게시물 삭제 clear
 app.delete("/detail/:id", can_login, async (req, res) => {
@@ -539,12 +547,11 @@ app.post("/api/newpw", async (req, res) => {
   let i_email = req.body.email;
   let i_id = req.body.id;
   let user = await User.findOne({ where: { email: i_email, user_id: i_id } });
-  //TODO: newpw 부분 정리하기
-
   var newpw = await Newpw.findOne({ where: { user_email: i_email } });
   const nodeMailer = new NodeMailer();
+  const random = new Random();
   // baseEntity .save는 기존것이 있으면 업데이트 없으면 생성
-  let i_token = await rand();
+  let i_token = await random.createRandomValue();
   if (user) {
     if (newpw != null) {
       newpw.token = i_token;
@@ -593,7 +600,30 @@ app.put("/api/newpw", async (req, res) => {
   }
 });
 
-async function rand(): Promise<string> {
-  var RandomValue = Math.random().toString(36).slice(2);
-  return RandomValue;
-}
+//TODO: 1. 좋아요 Post로 받으면 UserDB likeposts에 넣기
+//TODO: 2. likes DB에도 정보 넣기
+//TODO: 3. 만약 기존에 좋아요에 본인이 있다면 양쪽에서 빼기
+//TODO: 4. (later) transaction 처리하기
+
+app.post("/api/post/like", async (req, res) => {
+  //request에는 postId 와 like를 누른 현 사람의 userId 담아오기
+  //TODO: 유저가 없을 때(회원이 아니거나, 로그인을 안했을 때) response로 로그인이 필요하다고 알려주기
+  const postId = req.body.postId; //TODO: id 부분 용어 통일해야겠는걸?(prime key id도 있고 user id도 있어서 헷갈림 특히 user db는)
+  const userId = req.body.userId;
+});
+
+app.get("/api/post/like", async (req, res) => {
+  const postId = req.body.postId;
+  Post.findOne({
+    where: { id: postId },
+  }).then((data) => {
+    if (data) {
+      console.log("[DEBUG] foundPost:" + data);
+      let postLikes = data.likeUser;
+      console.log("[DEBUG] postLikes:" + postLikes);
+      res.json({ postLikes: postLikes });
+    } else {
+      res.json({ message: "wrong post id" });
+    }
+  });
+});
