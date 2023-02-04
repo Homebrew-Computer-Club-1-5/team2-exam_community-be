@@ -24,6 +24,7 @@ import { v4 as uuidv4 } from "uuid";
 import moment = require("moment-timezone");
 import { NodeMailer } from "./utils/node-mailer";
 import { Random } from "./utils/random";
+import * as bcrypt from "bcrypt";
 
 const getTime = () => {
   var m = moment().tz("Asia/Seoul");
@@ -374,7 +375,7 @@ app.post("/detail", can_login, async (req, res) => {
   const NewPost = new Post();
   // NewPost.uuid=req.user.uuid;
   NewPost.user_id = req.user.user_id;
-  NewPost.user_name = req.user.user_name;
+  NewPost.user_name = req.user.name;
   NewPost.title = req.body.title;
   NewPost.c_date = new Date();
   NewPost.num = parseInt(req.body.num);
@@ -534,10 +535,12 @@ passport.deserializeUser(async (id, done) => {
 
 //새로운 이메일 받고 조회 -> 그유저 id email 를 newpw 에넣고 토큰값도 넣고 **** 여기 api에서 메일 날려야함 ****
 app.post("/api/newpw", async (req, res) => {
-  let i_email = req.body.email;
   let i_id = req.body.id;
-  let user = await User.findOne({ where: { email: i_email, user_id: i_id } });
-  var newpw = await Newpw.findOne({ where: { user_email: i_email } });
+  let user = await User.findOne({ where: { user_id: i_id } });
+  let i_email = user.email;
+  //TODO: newpw 부분 정리하기
+  // user.email
+  var newpw = await Newpw.findOne({ where: { user_id: i_id } });
   const nodeMailer = new NodeMailer();
   const random = new Random();
   // baseEntity .save는 기존것이 있으면 업데이트 없으면 생성
@@ -547,28 +550,34 @@ app.post("/api/newpw", async (req, res) => {
       newpw.token = i_token;
       newpw.c_date = new Date();
       await newpw.save();
-      let nodeMaileSuccessJson = await nodeMailer.send_password_set_email(
-        i_email,
-        i_token
-      );
-      console.log("[DEBUG] send_again:" + nodeMaileSuccessJson);
-      res.send(nodeMaileSuccessJson);
+      nodeMailer
+        .send_password_set_email(i_email, i_token)
+        .then((data) => {
+          console.log("[DEBUG] send_again:" + data);
+          res.json({ success: true, email: i_email });
+        })
+        .catch((err) => {
+          res.json({ success: false, message: err });
+        });
     } else {
       let newpw = new Newpw();
       newpw.user_key = user.id;
-      newpw.user_email = i_email;
+      newpw.user_id = i_id;
       newpw.token = i_token;
       newpw.c_date = new Date();
       await newpw.save(); // 일정시간이 지나면 삭제 해야하는것이 좋을듯
-      let nodeMaileSuccessJson = nodeMailer.send_password_set_email(
-        i_email,
-        i_token
-      );
-      console.log("[DEBUG] node_mailer:" + nodeMaileSuccessJson);
-      res.send(nodeMaileSuccessJson);
+      nodeMailer
+        .send_password_set_email(i_email, i_token)
+        .then((data) => {
+          console.log("[DEBUG] node_mailer:" + data);
+          res.json({ success: true, email: i_email });
+        })
+        .catch((err) => {
+          res.json({ success: false, message: err });
+        });
     }
   } else {
-    res.send({ success: false, message: "user not found" });
+    res.json({ success: false, message: "user not found" });
   }
 });
 
@@ -582,8 +591,8 @@ app.put("/api/newpw", async (req, res) => {
     res.json({ success: false, message: "token wrong or missed" });
   } else {
     var user = await User.findOne({ where: { id: newpw.user_key } }); // user id 조회
-    user.user_pw = i_pw; //변경
-    user.saveEncryptedPassword(); // 이거하면 다시 객체 비번 hash ㄱㄱ 이거 될디 모르겠어 한번 해봐야함
+
+    user.user_pw = await bcrypt.hash(i_pw, 5);
     await user.save();
     await Newpw.remove(newpw); // 완료후 삭제
     res.json({ success: true, message: "new create pw " });
@@ -617,3 +626,4 @@ app.get("/api/post/like", async (req, res) => {
     }
   });
 });
+

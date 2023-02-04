@@ -76,7 +76,7 @@ AppDataSource.initialize().then(async () => {
 
 
     const newpw=new Newpw()
-    newpw.user_email=user.email
+    newpw.user_id=user.user_id
     newpw.user_key=user.id
     newpw.token='aaaa'
     newpw.c_date=new Date()
