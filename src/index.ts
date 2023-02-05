@@ -119,21 +119,47 @@ function can_login(req, res, next) {
   }
 }
 
+//login
 app.post(
   "/login",
-  passport.authenticate("local", {
-    failureRedirect: "/fail_login", // fail시 api 호출
-  }),
-  async (req, res) => {
-    console.log(req.user);
-    var res_user = req.user;
-    res_user.user_pw = ""; // 중요한 pw값은 넘기지 않겠다는 마음으로
-    res.json(res_user);
+  async (req, res, next) => {
+    passport.authenticate("local", (authError, user, info) => {
+      if (authError) {
+        console.error(authError);
+        return next(authError);
+      }
+      if (!user) {
+        console.log(info.message);
+        return res.json({ message: info.message });
+      }
+      return req.login(user, (loginError) => {
+        if (loginError) {
+          console.error(loginError);
+          return next(loginError);
+        }
+        // return res.redirect("/");
+        res.json(user);
+      });
+      // console.log(req.user);
+      // var res_user = req.user;
+      // res_user.user_pw = ""; // 중요한 pw값은 넘기지 않겠다는 마음으로
+      // res.json(res_user);
+    })(req, res, next);
   }
+  // passport.authenticate("local", {
+  //   failureRedirect: "/fail_login", // fail시 api 호출
+  // }),
+  // async (req, res) => {
+  //   console.log(req.user);
+  //   var res_user = req.user;
+  //   res_user.user_pw = ""; // 중요한 pw값은 넘기지 않겠다는 마음으로
+  //   res.json(res_user);
+  // }
 );
 
 app.get("/fail_login", (req, res) => {
-  res.status(200).json({ message: "login fail " });
+  res.status(200).json({ message: "login fail" });
+
 });
 
 app.get("/user", can_login, (req, res) => {
