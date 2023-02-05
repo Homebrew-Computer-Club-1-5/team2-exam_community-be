@@ -119,43 +119,22 @@ function can_login(req, res, next) {
   }
 }
 
-//login
-app.post("/login", async (req, res, next) => {
-  passport.authenticate("local", function (err, user, info) {
-    if (err) {
-      return next(err);
-    }
-    if (!user) {
-      // console.log("[DEBUG]: inside login if !user: " + info.message);
-      return res.json({ message: info.message });
-    }
+app.post(
+  "/login",
+  passport.authenticate("local", {
+    failureRedirect: "/fail_login", // fail시 api 호출
+  }),
+  async (req, res) => {
     console.log(req.user);
     var res_user = req.user;
     res_user.user_pw = ""; // 중요한 pw값은 넘기지 않겠다는 마음으로
     res.json(res_user);
-    // failureRedirect: "/fail_login", // fail시 api 호출
-  })(req, res, next);
+  }
+);
+
+app.get("/fail_login", (req, res) => {
+  res.status(200).json({ message: "login fail " });
 });
-
-// app.post('api/login',function(req,res,next){
-//     passport.authenticate("local",function(req,res,info){
-//         if (err) return next(err);
-//         if (user){
-//             req.logIn(user,(err)=>{
-//                 if(err)return next(err);
-//                 var res_user=user;
-//                 res_user.pw=""
-//                 res.json({info:{message:"유저 맞음"},res_user})
-//             })
-//         }else{
-//             res.json({info:info})
-//         }
-//     })(req,res,next)
-// })
-
-// app.get("/fail_login", (req, res) => {
-//   res.status(200).json({ message: "login fail " });
-// });
 
 app.get("/user", can_login, (req, res) => {
   console.log(req.user);
