@@ -158,7 +158,7 @@ app.post(
 );
 
 app.get("/fail_login", (req, res) => {
-  res.status(200).json({ message: "lo" });
+  res.status(200).json({ message: "login fail" });
 });
 
 app.get("/user", can_login, (req, res) => {
