@@ -88,7 +88,6 @@ passport.use(
     async (input_id, input_pw, done) => {
       // const login_user=await User.findOneBy({user_id:input_id})
       const login_user = await User.findbyid(input_id);
-      console.log(login_user);
       // no user
       if (login_user) {
         // 뭐가 있다면
@@ -121,18 +120,22 @@ function can_login(req, res, next) {
 }
 
 //login
-app.post(
-  "/login",
-  passport.authenticate("local", {
-    failureRedirect: "/fail_login", // fail시 api 호출
-  }),
-  async (req, res) => {
+app.post("/login", async (req, res, next) => {
+  passport.authenticate("local", function (err, user, info) {
+    if (err) {
+      return next(err);
+    }
+    if (!user) {
+      // console.log("[DEBUG]: inside login if !user: " + info.message);
+      return res.json({ message: info.message });
+    }
     console.log(req.user);
     var res_user = req.user;
     res_user.user_pw = ""; // 중요한 pw값은 넘기지 않겠다는 마음으로
     res.json(res_user);
-  }
-);
+    // failureRedirect: "/fail_login", // fail시 api 호출
+  })(req, res, next);
+});
 
 // app.post('api/login',function(req,res,next){
 //     passport.authenticate("local",function(req,res,info){
@@ -150,9 +153,9 @@ app.post(
 //     })(req,res,next)
 // })
 
-app.get("/fail_login", (req, res) => {
-  res.status(200).json({ message: "login fail " });
-});
+// app.get("/fail_login", (req, res) => {
+//   res.status(200).json({ message: "login fail " });
+// });
 
 app.get("/user", can_login, (req, res) => {
   console.log(req.user);
