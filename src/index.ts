@@ -116,7 +116,7 @@ function can_login(req, res, next) {
     next(); // 통과 ㄱㄱ 구문
   } else {
     //정보가 없으면 실행
-    res.json({ message: "session error" }); // 바꾸기 로그인 페이지 리다이렉션
+    res.statjson({ message: "session error" }); // 바꾸기 로그인 페이지 리다이렉션
   }
 }
 
@@ -151,7 +151,7 @@ app.post(
 // })
 
 app.get("/fail_login", (req, res) => {
-  res.status(500).json({ message: "login fail " });
+  res.status(200).json({ message: "login fail " });
 });
 
 app.get("/user", can_login, (req, res) => {
