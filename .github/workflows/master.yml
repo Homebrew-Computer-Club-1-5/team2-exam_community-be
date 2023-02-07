@@ -1,0 +1,32 @@
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+jobs:
+  my-instances:
+    runs-on: ubuntu-latest
+    name: use oci and kill, pull, npm install, start nohup
+    env:
+      OCI_CLI_USER: ${{ secrets.OCI_CLI_USER }}
+      OCI_CLI_TENANCY: ${{ secrets.OCI_CLI_TENANCY }}
+      OCI_CLI_FINGERPRINT: ${{ secrets.OCI_CLI_FINGERPRINT }}
+      OCI_CLI_KEY_CONTENT: ${{ secrets.OCI_CLI_KEY_CONTENT }}
+      OCI_CLI_REGION: ${{ secrets.OCI_CLI_REGION }}
+    steps:
+      - name: change directory
+        uses: oracle-actions/run-oci-cli-command@v1.1
+        id: change directory
+        with:
+          command: 'cd /home/ubuntu/ScriptFile'
+      
+      - name: Use back_kill_pull_nohub_start.sh
+        uses: oracle-actions/run-oci-cli-command@v1.1
+        id: back_kill_pull_nohub_start.sh
+        with:
+          command: './back_kill_pull_nohub_start.sh'
+          
+
+      
