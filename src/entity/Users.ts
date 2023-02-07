@@ -11,13 +11,13 @@ import {
   JoinColumn,
   PrimaryColumn,
 } from "typeorm";
-import { Post } from "./Post";
+import { Posts } from "./Posts";
 import * as bcrypt from "bcrypt"; // 암호화 관련
 import { RandomUUIDOptions } from "crypto";
 import { Likes } from "./Likes";
 
 @Entity("users")
-export class User extends BaseEntity {
+export class Users extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
   // @PrimaryColumn()
@@ -46,13 +46,13 @@ export class User extends BaseEntity {
   @Column()
   user_pw: string;
   // like
-  @OneToMany((type) => Post, (post) => post.user_key, {
+  @OneToMany((type) => Posts, (post) => post.user_key, {
     cascade: true,
   })
-  posts: Post[];
+  posts: Posts[];
 
   @OneToMany(() => Likes, (likes) => likes.user)
-  likePost: Likes[];
+  likePosts: Likes[];
 
   static findbyid(user_id: string) {
     return this.createQueryBuilder("user")
@@ -61,12 +61,12 @@ export class User extends BaseEntity {
   }
 
   //   insert 이후 hash 암호화
-  @BeforeInsert()
-  async saveEncryptedPassword() {
-    console.log("[DEBUG] inside beforeinsert: user_pw:" + this.user_pw);
-    this.user_pw = await bcrypt.hash(this.user_pw, 5);
-  }
-  
+  // @BeforeInsert()
+  // async saveEncryptedPassword() {
+  //   console.log("[DEBUG] inside beforeinsert: user_pw:" + this.user_pw);
+  //   this.user_pw = await bcrypt.hash(this.user_pw, 5);
+  // }
+
   // input user_pw 와 this.user_pw 의 hash 값 비교
   comparePassword(user_pw: string): boolean {
     return bcrypt.compare(user_pw, this.user_pw);

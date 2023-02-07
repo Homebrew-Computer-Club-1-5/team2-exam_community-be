@@ -7,8 +7,8 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from "typeorm";
-import { User } from "./User";
-import { Post } from "./Post";
+import { Users } from "./Users";
+import { Posts } from "./Posts";
 
 @Entity("likes")
 export class Likes extends BaseEntity {
@@ -18,10 +18,10 @@ export class Likes extends BaseEntity {
   userId: number;
   @Column()
   postId: number;
-  @ManyToOne(() => User, (user) => user.likePost) //TODO: nullable 안해줘도 되나?
+  @ManyToOne(() => Users, (user) => user.likePosts) //TODO: nullable 안해줘도 되나?
   @JoinTable({ name: "userId" })
-  user: Promise<User>;
-  @ManyToOne(() => Post, (post) => post.likeUser)
+  user: Promise<Users>;
+  @ManyToOne(() => Posts, (post) => post.likeUsers)
   @JoinTable({ name: "postId" })
-  post: Promise<Post>;
+  post: Promise<Posts>;
 }
