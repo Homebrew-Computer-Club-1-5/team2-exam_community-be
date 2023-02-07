@@ -18,13 +18,13 @@ jobs:
     steps:
       - name: change directory
         uses: oracle-actions/run-oci-cli-command@v1.1
-        id: change directory
+        id: num1
         with:
           command: 'cd /home/ubuntu/ScriptFile'
       
       - name: Use back_kill_pull_nohub_start.sh
         uses: oracle-actions/run-oci-cli-command@v1.1
-        id: back_kill_pull_nohub_start.sh
+        id: num2
         with:
           command: './back_kill_pull_nohub_start.sh'
           
