@@ -7,7 +7,7 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 
-app.use("/", apiRoutes);
+app.use("/apis", apiRoutes);
 
 app.use(express.json());
 app.use(cors());
