@@ -75,18 +75,22 @@ router.post("/logout", function (req, res, next) {
 
 //TODO: 기존 API : /user
 router.get("/", can_login, (req, res) => {
+  console.log("[DEBUG] im in get /");
   res.json(req.user.id);
 });
 
 //중복 아이디 입니다
 //TODO: 기존 API : post : /id_compare
 router.get("/compareId", async (req, res) => {
-  const user_input = req.body.user_id;
+  const user_input = req.params.user_id;
 
+  console.log("[DEBUG] compareId in");
   const us = await usersRepository.findOne({ where: { user_id: user_input } });
   if (us) {
+    console.log("[DEBUG] compareId success");
     res.json({ boo: false });
   } else {
+    console.log("[DEBUG] compareId fail");
     res.json({ boo: true });
   }
 });
