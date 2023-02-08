@@ -1,7 +1,6 @@
 import { AppDataSource } from "../data-source";
 import { Comments } from "../entity/Comments";
 import { Posts } from "../entity/Posts";
-import { Users } from "../entity/Users";
 import { can_login } from "../utils/can-login";
 const router = require("express").Router();
 
