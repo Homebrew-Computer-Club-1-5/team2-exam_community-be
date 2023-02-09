@@ -60,12 +60,12 @@ export class Users extends BaseEntity {
       .getOne();
   }
 
-  //   insert 이후 hash 암호화
-  // @BeforeInsert()
-  // async saveEncryptedPassword() {
-  //   console.log("[DEBUG] inside beforeinsert: user_pw:" + this.user_pw);
-  //   this.user_pw = await bcrypt.hash(this.user_pw, 5);
-  // }
+  // insert 이후 hash 암호화
+  @BeforeInsert()
+  async saveEncryptedPassword() {
+    console.log("[DEBUG] inside beforeinsert: user_pw:" + this.user_pw);
+    this.user_pw = await bcrypt.hash(this.user_pw, 5);
+  }
 
   // input user_pw 와 this.user_pw 의 hash 값 비교
   comparePassword(user_pw: string): boolean {
