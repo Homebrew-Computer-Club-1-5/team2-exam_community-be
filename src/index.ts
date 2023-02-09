@@ -6,8 +6,9 @@ const express = require("express");
 
 const app = express();
 const cors = require("cors");
+const bodyParser = require("body-parser");
 
-app.use("/apis", apiRoutes);
+app.use(bodyParser.json());
 
 app.use(express.json());
 app.use(cors());
@@ -41,6 +42,9 @@ app.use(session({ secret: "secret", resave: false, saveUninitialized: false }));
 
 app.use(passport.initialize());
 app.use(passport.session());
+
+//순서 중요해 마지막에 있어야 함
+app.use("/apis", apiRoutes);
 
 app.listen(8080, () => {
   console.log("listening on 8080 port open !!!!");
