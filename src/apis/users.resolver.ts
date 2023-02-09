@@ -81,17 +81,23 @@ router.get("/", can_login, (req, res) => {
 
 //중복 아이디 입니다
 //TODO: 기존 API : post : /id_compare
-router.get("/compareId", async (req, res) => {
-  const user_input = req.params.user_id;
-
-  console.log("[DEBUG] compareId in");
-  const us = await usersRepository.findOne({ where: { user_id: user_input } });
-  if (us) {
-    console.log("[DEBUG] compareId success");
-    res.json({ boo: false });
+router.get("/compareId/:user_id", async (req, res) => {
+  const user_input_id = req.params.user_id;
+  console.log("[DEBUG] userInput: " + user_input_id);
+  if (user_input_id) {
+    const us = await usersRepository.findOne({
+      where: { user_id: user_input_id },
+    });
+    if (us) {
+      console.log("[DEBUG] id 중복");
+      res.json({ boo: false });
+    } else {
+      console.log("[DEBUG] id no 중복");
+      res.json({ boo: true });
+    }
   } else {
-    console.log("[DEBUG] compareId fail");
-    res.json({ boo: true });
+    console.log("[DEBUG] id 입력 안들어옴");
+    res.json({ boo: false, message: "id 입력 없음" });
   }
 });
 
@@ -116,7 +122,7 @@ router.post("/register", async (req, res) => {
   user.name = req.body.name;
   user.age = req.body.age;
   user.email = req.body.email;
-  user.phone = req.body.phone;
+  // user.phone = req.body.phone;
   user.gender = req.body.gender;
   user.c_date = new Date();
   user.user_id = req.body.user_id;

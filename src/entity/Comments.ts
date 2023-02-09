@@ -28,7 +28,7 @@ export class Comments extends BaseEntity {
   user_id: string;
   @Column()
   user_name: string;
-  @Column("text")
+  @Column()
   content: string;
   @CreateDateColumn()
   c_date: Date;

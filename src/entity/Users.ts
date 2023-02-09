@@ -32,7 +32,7 @@ export class Users extends BaseEntity {
   @Column()
   email: string;
   @Column()
-  phone: string;
+  phone?: string;
   @Column()
   gender: string;
   @CreateDateColumn()
