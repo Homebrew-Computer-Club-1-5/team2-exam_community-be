@@ -31,8 +31,8 @@ export class Users extends BaseEntity {
   age: string;
   @Column()
   email: string;
-  @Column()
-  phone?: string;
+  @Column({ nullable: true })
+  phone: string;
   @Column()
   gender: string;
   @CreateDateColumn()

@@ -22,7 +22,6 @@ AppDataSource.initialize()
     user.name = "minseok";
     user.age = "3";
     user.email = "aaaaa@gmail.com";
-    user.phone = "01012341234";
     user.gender = "m";
     user.c_date = new Date();
     user.user_id = admin.ID;

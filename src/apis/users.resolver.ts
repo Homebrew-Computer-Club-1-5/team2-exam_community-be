@@ -150,7 +150,6 @@ router.post("/mypage", can_login, async (req, res) => {
       name: req.body.name,
       age: req.body.age,
       email: req.body.email,
-      phone: req.body.phone,
       gender: req.body.gender,
       m_date: new Date(),
     })
