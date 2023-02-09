@@ -93,22 +93,30 @@ router.post("/detail", can_login, async (req, res) => {
 });
 
 router.get("/detail/:id", async (req, res) => {
-  var post_id = parseInt(req.params.id);
-  const post_detail = await Posts.findOneBy({ id: post_id });
-  //조회수 1증가
+  console.log("[DEBUG] im in detail id");
+  try {
+    var post_id = parseInt(req.params.id);
+    console.log("[DEBUG] postId" + post_id);
+    const post_detail = await Posts.findOneBy({ id: post_id });
+    console.log("[DEBUG] postDetail" + post_detail);
+    //조회수 1증가
 
-  post_detail.click_num = post_detail.click_num + 1;
-  await Posts.save(post_detail); //저장
-  // const post_comments=await Comment.findAndCount({post_key:post_detail.id})
-  const post_comments = await Comments.find_post_key(post_id);
-
-  var Ruser_id = "";
-  if (post_detail.is_user_hid == true) {
-    // 유저가 숨기기 원하면 넘기기전에 아이디를 수정 해서 리턴
-    Ruser_id = post_detail.user_id;
-    post_detail.user_id = "cloaking";
+    post_detail.click_num = post_detail.click_num + 1;
+    await Posts.save(post_detail); //저장
+    // const post_comments=await Comment.findAndCount({post_key:post_detail.id})
+    const post_comments = await Comments.find_post_key(post_id);
+    console.log("[DEBUG] postComment:" + post_comments);
+    var Ruser_id = "";
+    if (post_detail.is_user_hid == true) {
+      // 유저가 숨기기 원하면 넘기기전에 아이디를 수정 해서 리턴
+      Ruser_id = post_detail.user_id;
+      post_detail.user_id = "cloaking";
+    }
+    res.json({ post_detail, post_comments });
+  } catch {
+    res.json({ message: "찾기 실패" });
   }
-  res.json({ post_detail, post_comments });
+
   //요청자가 작성자이면
   // if(req.user.user_id==Ruser_id){
   //     var message={msg:'myPost'}
