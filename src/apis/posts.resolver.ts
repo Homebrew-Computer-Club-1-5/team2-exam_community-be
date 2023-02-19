@@ -1,6 +1,9 @@
+import { clearScreenDown } from "readline";
 import { AppDataSource } from "../data-source";
 import { Comments } from "../entity/Comments";
+import { Likes } from "../entity/Likes";
 import { Posts } from "../entity/Posts";
+import { Users } from "../entity/Users";
 import { can_login } from "../utils/can-login";
 const router = require("express").Router();
 
@@ -193,30 +196,66 @@ router.post("/find/:id", async (req, res) => {
 //   }
 // });
 
-//TODO: 1. 좋아요 Posts로 받으면 UsersDB likeposts에 넣기
-//TODO: 2. likes DB에도 정보 넣기
-//TODO: 3. 만약 기존에 좋아요에 본인이 있다면 양쪽에서 빼기
-//TODO: 4. (later) transaction 처리하기
-router.post("/like", async (req, res) => {
-  //request에는 postId 와 like를 누른 현 사람의 userId 담아오기
-  //TODO: 유저가 없을 때(회원이 아니거나, 로그인을 안했을 때) response로 로그인이 필요하다고 알려주기
-  const postId = req.body.postId; //TODO: id 부분 용어 통일해야겠는걸?(prime key id도 있고 user id도 있어서 헷갈림 특히 user db는)
-  const userId = req.body.userId;
+router.post("/like", can_login, async (req, res) => {
+  //TODO: 기존에 Like 찍은 게 있었으면 like 지우기 추가
+  const postId = req.body.postId;
+  const userId = req.user.id;
+  const user = await Users.findOne({ where: { id: userId } });
+  const post = await Posts.findOne({ where: { id: postId } });
+  if (user && post) {
+    const like = new Likes();
+    like.user = userId;
+    like.post = postId;
+    like
+      .save()
+      .then(() => {
+        console.log("[DEBUG] like save success");
+        res.status(201).json({ success: true, message: "like success" });
+      })
+      .catch((err) => {
+        console.log("[DEBUG] like err:" + err);
+        res.status(500).json({ success: false, message: "false success" });
+      });
+  } else {
+    res
+      .status(400)
+      .json({ success: false, message: "user id or post id is wrong" });
+  }
 });
 
-router.get("/like", async (req, res) => {
-  const postId = req.body.postId;
-  Posts.findOne({
-    where: { id: postId },
-  }).then((data) => {
-    if (data) {
-      console.log("[DEBUG] foundPosts:" + data);
-      let postLikes = data.likeUsers;
-      console.log("[DEBUG] postLikes:" + postLikes);
-      res.json({ postLikes: postLikes });
-    } else {
-      res.json({ message: "wrong post id" });
-    }
+//해당 게시물의 좋아요 수 및 내가 좋아요 눌렀는 지 여부
+router.get("/like/:id", async (req, res) => {
+  const postId = req.params.id ?? 0;
+  const likes = await Likes.find({
+    where: { post: postId },
   });
+  // const like = await Likes.findOneOrFail({
+  //   where: { post: postId },
+  // });
+  //TODO: 왜 _.user 나 _.post는 Undefined지??
+  // const likesCount = like.length;
+  console.log("[DEBUG] like:" + likes);
+  if (req.user) {
+    let doesUserLike: boolean;
+    await Likes.find({
+      where: { post: postId, user: req.user.id },
+    }).then((data) => {
+      console.log("[DEBUG] data:" + data);
+      doesUserLike = data ? true : false;
+    });
+    res.status(200).json({
+      success: true,
+      // likesCount: likesCount,
+      doesUserLike: doesUserLike ? true : false,
+    });
+  } else {
+    //로그인 안된 경우
+    res.status(200).json({
+      success: true,
+      likesCount: 1,
+      // likesCount
+    });
+  }
 });
+
 module.exports = router;
