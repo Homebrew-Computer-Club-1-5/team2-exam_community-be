@@ -8,6 +8,7 @@ import { can_login } from "../utils/can-login";
 const router = require("express").Router();
 
 const postsRepository = AppDataSource.getRepository(Posts);
+const likesRepository = AppDataSource.getRepository(Likes);
 
 //TODO: 기존 URL : /mypost
 router.get("/my", can_login, async (req, res) => {
@@ -204,8 +205,8 @@ router.post("/like", can_login, async (req, res) => {
   const post = await Posts.findOne({ where: { id: postId } });
   if (user && post) {
     const like = new Likes();
-    like.user = userId;
-    like.post = postId;
+    like.userId = userId;
+    like.postId = postId;
     like
       .save()
       .then(() => {
@@ -225,35 +226,36 @@ router.post("/like", can_login, async (req, res) => {
 
 //해당 게시물의 좋아요 수 및 내가 좋아요 눌렀는 지 여부
 router.get("/like/:id", async (req, res) => {
-  const postId = req.params.id ?? 0;
-  const likes = await Likes.find({
-    where: { post: postId },
-  });
-  // const like = await Likes.findOneOrFail({
+  const postId = req.params.id;
+  // const likes = await Likes.findOne({
   //   where: { post: postId },
   // });
-  //TODO: 왜 _.user 나 _.post는 Undefined지??
-  // const likesCount = like.length;
-  console.log("[DEBUG] like:" + likes);
-  if (req.user) {
+  const [likesTotal, likesCount] = await Likes.findAndCount({
+    where: { postId: postId },
+  });
+
+  if (req.user && likesCount > 0) {
     let doesUserLike: boolean;
     await Likes.find({
-      where: { post: postId, user: req.user.id },
-    }).then((data) => {
-      console.log("[DEBUG] data:" + data);
-      doesUserLike = data ? true : false;
-    });
-    res.status(200).json({
-      success: true,
-      // likesCount: likesCount,
-      doesUserLike: doesUserLike ? true : false,
-    });
+      where: { postId: postId, userId: req.user.id },
+    })
+      .then((data) => {
+        console.log("[DEBUG] data:" + data);
+        doesUserLike = data ? true : false;
+        res.status(200).json({
+          success: true,
+          likesCount: likesCount,
+          doesUserLike: doesUserLike ? true : false,
+        });
+      })
+      .catch((err) => {
+        res.status(500).json({ err: err });
+      });
   } else {
     //로그인 안된 경우
     res.status(200).json({
       success: true,
-      likesCount: 1,
-      // likesCount
+      likesCount: likesCount,
     });
   }
 });

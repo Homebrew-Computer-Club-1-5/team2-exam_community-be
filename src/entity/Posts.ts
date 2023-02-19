@@ -59,10 +59,10 @@ export class Posts extends BaseEntity {
   comments: Comments[];
 
   // like
-  @OneToMany(() => Likes, (likes) => likes.post, {
-    nullable: true,
-  })
-  likes: Likes[];
+  // @OneToMany(() => Likes, (likes) => likes.post, {
+  //   nullable: true,
+  // })
+  // likes: Likes[];
 
   static find_num(num: number) {
     return this.createQueryBuilder("post")

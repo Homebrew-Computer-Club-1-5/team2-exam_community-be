@@ -51,11 +51,11 @@ export class Users extends BaseEntity {
   })
   posts: Posts[];
 
-  // like
-  @OneToMany(() => Likes, (likes) => likes.user, {
-    nullable: true,
-  })
-  likes: Likes[];
+  // // like
+  // @OneToMany(() => Likes, (likes) => likes.user, {
+  //   nullable: true,
+  // })
+  // likes: Likes[];
 
   static findbyid(user_id: string) {
     return this.createQueryBuilder("user")

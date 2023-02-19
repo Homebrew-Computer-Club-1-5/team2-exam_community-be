@@ -15,9 +15,11 @@ export class Likes extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Users, (user) => user.likes, { cascade: true })
-  user: string;
+  // @ManyToOne(() => Users, (user) => user.likes)
+  @Column()
+  userId: string;
 
-  @ManyToOne(() => Posts, (post) => post.likes, { cascade: true })
-  post: string;
+  // @ManyToOne(() => Posts, (post) => post.likes)
+  @Column()
+  postId: string;
 }
