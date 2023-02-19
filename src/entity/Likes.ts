@@ -17,9 +17,12 @@ export class Likes extends BaseEntity {
 
   // @ManyToOne(() => Users, (user) => user.likes)
   @Column()
-  userId: string;
+  userId: number;
 
   // @ManyToOne(() => Posts, (post) => post.likes)
   @Column()
-  postId: string;
+  postId: number;
+
+  @Column()
+  doesLike: boolean;
 }
