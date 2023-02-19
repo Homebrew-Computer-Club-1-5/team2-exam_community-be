@@ -45,14 +45,17 @@ export class Users extends BaseEntity {
   user_id: string;
   @Column()
   user_pw: string;
-  // like
+
   @OneToMany((type) => Posts, (post) => post.user_key, {
     cascade: true,
   })
   posts: Posts[];
 
-  @OneToMany(() => Likes, (likes) => likes.user)
-  likePosts: Likes[];
+  // // like
+  // @OneToMany(() => Likes, (likes) => likes.user, {
+  //   nullable: true,
+  // })
+  // likes: Likes[];
 
   static findbyid(user_id: string) {
     return this.createQueryBuilder("user")
@@ -61,9 +64,10 @@ export class Users extends BaseEntity {
   }
 
   // insert 이후 hash 암호화
+  //여기 지우면 안됨
   @BeforeInsert()
   async saveEncryptedPassword() {
-    console.log("[DEBUG] inside beforeinsert: user_pw:" + this.user_pw);
+    console.log("[DEBUG] inside beforeinsert: user_pw:");
     this.user_pw = await bcrypt.hash(this.user_pw, 5);
   }
 

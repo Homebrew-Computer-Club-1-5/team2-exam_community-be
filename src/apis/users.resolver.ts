@@ -28,7 +28,8 @@ router.post(
           return next(loginError);
         }
         // return res.redirect("/");
-        res.json(user);
+        // TODO: 여기 살리기res.json(user);
+        res.json({ user: req.user });
       });
       // console.log(req.user);
       // var res_user = req.user;
@@ -51,7 +52,10 @@ router.get("/login", can_login, async (req, res) => {
   try {
     const find_user = await Users.findOne({ where: { id: user } });
     if (req.user.id == find_user.id) {
-      res.json({ isAuthenticated: true, username: req.user.name });
+      res.json({
+        isAuthenticated: true,
+        username: req.user.name,
+      });
     } else {
       res.json({ isAuthenticated: false });
     }

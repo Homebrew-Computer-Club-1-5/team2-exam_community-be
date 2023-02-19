@@ -13,15 +13,16 @@ import { Posts } from "./Posts";
 @Entity("likes")
 export class Likes extends BaseEntity {
   @PrimaryGeneratedColumn()
-  readonly id: number;
+  id: number;
+
+  // @ManyToOne(() => Users, (user) => user.likes)
   @Column()
   userId: number;
+
+  // @ManyToOne(() => Posts, (post) => post.likes)
   @Column()
   postId: number;
-  @ManyToOne(() => Users, (user) => user.likePosts) //TODO: nullable 안해줘도 되나?
-  @JoinTable({ name: "userId" })
-  user: Promise<Users>;
-  @ManyToOne(() => Posts, (post) => post.likeUsers)
-  @JoinTable({ name: "postId" })
-  post: Promise<Posts>;
+
+  @Column()
+  doesLike: boolean;
 }
