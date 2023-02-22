@@ -206,26 +206,21 @@ router.post("/like", can_login, async (req, res) => {
 
   try {
     if (user && post) {
-      const [likesTotal, likesCount] = await Likes.findAndCount({
-        where: { postId: postId },
-      });
-      const like = await Likes.findOne({
-        where: { userId: user.id, postId: post.id },
-      });
-
-      if (like) {
-        like.doesLike = !like.doesLike;
-        like.save();
-        res.status(201).json({
-          success: true,
-          doesUserLike: !like.doesLike,
-          likesCount: like.doesLike ? likesCount - 1 : likesCount + 1,
+      const doesUserLike = await Likes.doesUserLike(postId, userId);
+      const likesCount = await Likes.countLikes(postId);
+      if (doesUserLike.bool) {
+        await Likes.delete(doesUserLike.id).then(() => {
+          res.status(201).json({
+            success: true,
+            doesUserLike: false,
+            likesCount: likesCount - 1,
+          });
         });
       } else {
         const newLike = new Likes();
         newLike.userId = userId;
         newLike.postId = postId;
-        newLike.doesLike = true;
+        newLike.c_date = new Date();
         newLike.save();
         res.status(201).json({
           success: true,
@@ -236,9 +231,9 @@ router.post("/like", can_login, async (req, res) => {
     } else {
       res.status(400).json({
         success: false,
-        doesUserLike: false,
         message: "user id or post id is wrong",
       });
+
     }
   } catch {
     res.status(500).json({
@@ -249,34 +244,37 @@ router.post("/like", can_login, async (req, res) => {
 });
 
 //해당 게시물의 좋아요 수 및 내가 좋아요 눌렀는 지 여부
-router.get("/like/:id", async (req, res) => {
-  const postId: number = req.params.id;
-  const [likesTotal, likesCount] = await Likes.findAndCount({
-    where: { postId: postId },
-  });
+router.get("/like/:postId", async (req, res) => {
+  const postId: number = req.params.postId;
+  const userId: number = req.user.id;
+  try {
+    const likesCount = await Likes.countLikes(postId);
 
-  if (req.user && likesCount > 0) {
-    let doesUserLike: boolean;
-    await Likes.find({
-      where: { postId: postId, userId: req.user.id },
-    })
-      .then((data) => {
-        console.log("[DEBUG] data:" + data);
-        doesUserLike = data ? true : false;
-        res.status(200).json({
-          success: true,
-          likesCount: likesCount,
-          doesUserLike: doesUserLike ? true : false,
-        });
-      })
-      .catch((err) => {
-        res.status(500).json({ err: err });
+    if (likesCount == 0) {
+      res.status(200).json({
+        success: true,
+        doesUserLike: false,
+        likesCount: 0,
       });
-  } else {
-    //로그인 안된 경우
-    res.status(200).json({
-      success: true,
-      likesCount: likesCount,
+    } else if (req.user) {
+      const doesUserLike = await Likes.doesUserLike(postId, userId);
+      res.status(200).json({
+        success: true,
+        doesUserLike: doesUserLike.bool,
+        likesCount: likesCount,
+      });
+    } else {
+      //로그인 안된 경우
+      res.status(200).json({
+        success: true,
+        doesUserLike: false,
+        likesCount: likesCount,
+      });
+    }
+  } catch {
+    res.status(500).json({
+      success: false,
+      message: "like error",
     });
   }
 });

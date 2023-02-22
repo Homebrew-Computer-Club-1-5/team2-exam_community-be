@@ -2,9 +2,7 @@ import {
   BaseEntity,
   Column,
   Entity,
-  JoinColumn,
-  JoinTable,
-  ManyToOne,
+  CreateDateColumn,
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { Users } from "./Users";
@@ -23,6 +21,24 @@ export class Likes extends BaseEntity {
   @Column()
   postId: number;
 
-  @Column()
-  doesLike: boolean;
+  @CreateDateColumn()
+  c_date: Date;
+
+  static async countLikes(postId: number): Promise<number> {
+    const [_, likesCount] = await Likes.findAndCount({
+      where: { postId: postId },
+    });
+    return likesCount;
+  }
+
+  static async doesUserLike(
+    postId: number,
+    userId: number
+  ): Promise<{ bool: boolean; id: number }> {
+    const like = await Likes.findOne({
+      where: { postId: postId, userId: userId },
+    });
+    const doesUserLike = like.id ? true : false;
+    return { bool: doesUserLike, id: like.id };
+  }
 }
