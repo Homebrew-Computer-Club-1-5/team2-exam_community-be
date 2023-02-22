@@ -1,3 +1,4 @@
+import { BlobOptions } from "buffer";
 import { clearScreenDown } from "readline";
 import { AppDataSource } from "../data-source";
 import { Comments } from "../entity/Comments";
@@ -186,48 +187,33 @@ router.post("/find/:id", async (req, res) => {
   }
 });
 
-// router.get("/modify/:id", can_login, async (req, res) => {
-//   const post = await postsRepository.find({
-//     where: { id: parseInt(req.params.id) },
-//   });
-//   if (post) {
-//     res.json(post);
-//   } else {
-//     res.json({ massage: "fail post" });
-//   }
-// });
+router.get("/modify/:id", can_login, async (req, res) => {
+  const post = await postsRepository.find({
+    where: { id: parseInt(req.params.id) },
+  });
+  if (post) {
+    res.json(post);
+  } else {
+    res.json({ massage: "fail post" });
+  }
+});
 
 router.post("/like", can_login, async (req, res) => {
-  //TODO: 기존에 Like 찍은 게 있었으면 like 지우기 추가
   const postId: number = req.body.postId;
   const userId: number = req.user.id;
+  console.log("[DEBUG] userId:" + userId);
   const user = await Users.findOne({ where: { id: userId } });
   const post = await Posts.findOne({ where: { id: postId } });
-
   try {
-    if (user && post) {
-      const doesUserLike = await Likes.doesUserLike(postId, userId);
-      const likesCount = await Likes.countLikes(postId);
-      if (doesUserLike.bool) {
-        await Likes.delete(doesUserLike.id).then(() => {
-          res.status(201).json({
-            success: true,
-            doesUserLike: false,
-            likesCount: likesCount - 1,
-          });
-        });
-      } else {
-        const newLike = new Likes();
-        newLike.userId = userId;
-        newLike.postId = postId;
-        newLike.c_date = new Date();
-        newLike.save();
-        res.status(201).json({
-          success: true,
-          doesUserLike: true,
-          likesCount: likesCount + 1,
-        });
-      }
+    if (user.id && post.id) {
+      const likesCount = await Likes.countLikes(post.id);
+      let doesUserLike: boolean = await Likes.postLike(post.id, user.id); //post한 이후에 좋아하는 지
+      console.log("[DEBUG] postLike:" + doesUserLike);
+      res.status(201).json({
+        success: true,
+        doesUserLike: doesUserLike,
+        likesCount: doesUserLike ? likesCount + 1 : likesCount - 1,
+      });
     } else {
       res.status(400).json({
         success: false,
@@ -235,7 +221,8 @@ router.post("/like", can_login, async (req, res) => {
       });
 
     }
-  } catch {
+  } catch (err) {
+    console.log("[DEBUG] err:" + err);
     res.status(500).json({
       success: false,
       message: "like fail",
@@ -246,7 +233,7 @@ router.post("/like", can_login, async (req, res) => {
 //해당 게시물의 좋아요 수 및 내가 좋아요 눌렀는 지 여부
 router.get("/like/:postId", async (req, res) => {
   const postId: number = req.params.postId;
-  const userId: number = req.user.id;
+
   try {
     const likesCount = await Likes.countLikes(postId);
 
@@ -257,10 +244,13 @@ router.get("/like/:postId", async (req, res) => {
         likesCount: 0,
       });
     } else if (req.user) {
-      const doesUserLike = await Likes.doesUserLike(postId, userId);
+      const { doesUserLike, like } = await Likes.checkIfUserLikes(
+        postId,
+        req.user.id
+      );
       res.status(200).json({
         success: true,
-        doesUserLike: doesUserLike.bool,
+        doesUserLike: doesUserLike,
         likesCount: likesCount,
       });
     } else {
@@ -271,7 +261,8 @@ router.get("/like/:postId", async (req, res) => {
         likesCount: likesCount,
       });
     }
-  } catch {
+  } catch (err) {
+    console.log("[DEBUG] err:" + err);
     res.status(500).json({
       success: false,
       message: "like error",

@@ -75,4 +75,10 @@ export class Users extends BaseEntity {
   comparePassword(user_pw: string): boolean {
     return bcrypt.compare(user_pw, this.user_pw);
   }
+
+  async findUserEmailWithId(user_id: string): Promise<String> {
+    let user_email: string;
+    let user = await Users.findOne({ where: { user_id: user_id } });
+    if (user) return user_email;
+  }
 }
