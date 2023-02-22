@@ -171,7 +171,6 @@ router.post("/mypage", can_login, async (req, res) => {
 });
 
 //새로운 이메일 받고 조회 -> 그유저 id email 를 newpw 에넣고 토큰값도 넣고 **** 여기 api에서 메일 날려야함 ****
-//TODO: 기존 API : /api/newpw
 router.post("/newpw", async (req, res) => {
   let i_id = req.body.id;
   let user = await Users.findOne({ where: { user_id: i_id } });
