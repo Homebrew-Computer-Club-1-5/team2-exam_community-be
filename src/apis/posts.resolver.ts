@@ -53,6 +53,7 @@ router.get("/", async (req, res) => {
 
 //특정 게시판 가져오기
 //TODO: 기존 API : /blogs/:id
+//TODO: 여기서 Join이 필요하겠구나!
 router.get("/:id", async (req, res) => {
   var num_id: number = parseInt(req.params.id);
   await postsRepository
@@ -98,29 +99,31 @@ router.post("/detail", can_login, async (req, res) => {
 });
 
 router.get("/detail/:id", async (req, res) => {
-  var post_id = parseInt(req.params.id);
-  const post_detail = await Posts.findOneBy({ id: post_id });
-  //조회수 1증가
+  try {
+    var post_id = parseInt(req.params.id);
+    const post_detail = await Posts.findOneBy({ id: post_id });
+    //조회수 1증가
 
-  post_detail.click_num = post_detail.click_num + 1;
-  await Posts.save(post_detail); //저장
-  // const post_comments=await Comment.findAndCount({post_key:post_detail.id})
-  const post_comments = await Comments.find_post_key(post_id);
+    if (post_detail) {
+      post_detail.click_num = post_detail.click_num + 1;
+      await Posts.save(post_detail); //저장
+      const post_comments = await Comments.find_post_key(post_id);
 
-  var Ruser_id = "";
-  if (post_detail.is_user_hid == true) {
-    // 유저가 숨기기 원하면 넘기기전에 아이디를 수정 해서 리턴
-    Ruser_id = post_detail.user_id;
-    post_detail.user_id = "cloaking";
+      if (post_detail.is_user_hid == true) {
+        // 유저가 숨기기 원하면 넘기기전에 아이디를 수정 해서 리턴
+        post_detail.user_id = "cloaking";
+      }
+
+      const likesNum = Likes.countLikes(post_detail.id);
+
+      res.json({ post_detail, post_comments, likesNum });
+    } else {
+      res.status(400).json({ success: false, message: "postId 잘못 됨" });
+    }
+  } catch (err) {
+    console.log("[DEBUG] GET posts/detail/:id err:" + err);
+    res.status(500).json({ success: false, message: err });
   }
-  res.json({ post_detail, post_comments });
-  //요청자가 작성자이면
-  // if(req.user.user_id==Ruser_id){
-  //     var message={msg:'myPost'}
-  //     res.json({post_detail,post_comments,message})
-  // }else{
-  //     res.json({post_detail,post_comments})
-  // }
 });
 
 router.put("/detail/:id", can_login, async (req, res) => {
